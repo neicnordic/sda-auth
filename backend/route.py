@@ -1,29 +1,28 @@
 import os
-import settings
 import requests
 import json
+import logging
 from gevent.pywsgi import WSGIServer
 from flask import (
     Blueprint, Flask, render_template, request, abort, redirect, url_for
 )
-import logging
+from settings import SERVICE_SETTINGS as config
 
-logging.basicConfig(level=settings.LOG_LEVEL)
-
-
-
-app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
-auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth')
+logging.basicConfig(level=config["LOG_LEVEL"])
 
 
-@app.route('/')
+app = Flask(__name__, template_folder="../frontend/templates", static_folder="../frontend/static")
+auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
+
+
+@app.route("/")
 def ega_home():
-    return redirect(url_for('auth.authenticate_to_elixir'))
+    return redirect(url_for("auth.authenticate_to_elixir"))
 
 
-@auth_blueprint.route('/')
+@auth_blueprint.route("/")
 def authenticate_to_elixir():
-    return app.send_static_file('index.html')
+    return app.send_static_file("index.html")
 
 
 def start_app(flask_app):
@@ -32,9 +31,9 @@ def start_app(flask_app):
 
 def main():
     start_app(app)
-    logging.debug(f'>>>>> Starting Elixir server at http://{settings.BIND_ADDRESS}:{settings.PORT} <<<<<')
+    logging.debug(">>>>> Starting Elixir server at http://{}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
     # Create gevent WSGI server
-    wsgi_server = WSGIServer((settings.BIND_ADDRESS, settings.PORT),
+    wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
                              app.wsgi_app)
                             # certfile=settings.CERT_FILE,
                             # keyfile=settings.KEY_FILE,

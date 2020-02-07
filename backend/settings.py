@@ -26,26 +26,18 @@ except FileNotFoundError:
 yaml_settings = yaml.safe_load(yaml_settings_fh)
 yaml_settings_fh.close()
 
-LOG_LEVEL =  yaml_settings["log_level"]
-ELIXIR_REDIRECT_URI = yaml_settings["elixir"]['redirectUri']
-ELIXIR_ID = yaml_settings["elixir"]['id']
-ELIXIR_SECRET = yaml_settings["elixir"]['secret']
-BIND_ADDRESS = yaml_settings["bindAddress"]
-PORT = yaml_settings["port"]
+SERVICE_SETTINGS = { "LOG_LEVEL" :  yaml_settings["logLevel"],
+                     "ELIXIR_REDIRECT_URI" : yaml_settings["elixir"]["redirectUri"],
+                     "ELIXIR_ID" : yaml_settings["elixir"]["id"],
+                     "ELIXIR_SECRET" : yaml_settings["elixir"]["secret"],
+                     "BIND_ADDRESS" : yaml_settings["bindAddress"],
+                     "PORT" : yaml_settings["port"] }
 
 # ENV settings
 
-if "LOG_LEVEL" in os.environ:
-    LOG_LEVEL = os.environ.get('LOG_LEVEL')
+def overwrite_with_env(env_var):
+    if env_var in os.environ:
+        SERVICE_SETTINGS[env_var] = os.environ.get(env_var)
 
-if "ELIXIR_REDIRECT_URI" in os.environ:
-    ELIXIR_REDIRECT_URI = os.environ.get('ELIXIR_REDIRECT_URI')
-
-if "ELIXIR_SECRET" in os.environ:
-    ELIXIR_SECRET = os.environ.get('ELIXIR_SECRET')
-
-if "BIND_ADDRESS" in os.environ:
-    BIND_ADDRESS = os.environ.get('BIND_ADDRESS')
-
-if "PORT" in os.environ:
-    PORT = os.environ.get('PORT')
+for var in SERVICE_SETTINGS.keys():
+    overwrite_with_env(var)
