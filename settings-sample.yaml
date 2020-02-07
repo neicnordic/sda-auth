@@ -1,0 +1,8 @@
+---
+elixir:
+  redirectUri: "Elixir AAI Redirect URI"
+  id: "Elixir AAI client id"
+  secret: "Elixir AAI client secret"
+bindAddress: "127.0.0.1"
+port: 31111
+log_level: 'DEBUG'
