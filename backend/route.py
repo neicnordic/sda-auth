@@ -2,31 +2,36 @@ import os
 import requests
 import json
 import logging
+import auth
 from gevent.pywsgi import WSGIServer
 from flask import (
-    Blueprint, Flask, render_template, request, abort, redirect, url_for
+    Blueprint, Flask, request, jsonify, redirect, url_for
 )
 from settings import SERVICE_SETTINGS as config
 
 logging.basicConfig(level=config["LOG_LEVEL"])
 
-
 app = Flask(__name__, template_folder="../frontend/templates", static_folder="../frontend/static")
-auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 
+elixir_blueprint = Blueprint("auth", __name__, url_prefix="/elixir")
 
-@app.route("/")
-def ega_home():
-    return redirect(url_for("auth.authenticate_to_elixir"))
-
-
-@auth_blueprint.route("/")
-def authenticate_to_elixir():
+@app.route("/", methods=['GET'])
+def auth_home():
     return app.send_static_file("index.html")
 
 
+@elixir_blueprint.route("/login", methods=['GET'])
+def login_to_elixir():
+    return redirect(auth._OAUTH_AUTHORIZE_URL, code=302)
+
+
+@elixir_blueprint.route("/logout", methods=['GET'])
+def logout_from_elixir():
+    return "Logging out..."
+
+
 def start_app(flask_app):
-    flask_app.register_blueprint(auth_blueprint)
+    flask_app.register_blueprint(elixir_blueprint)
 
 
 def main():
@@ -35,9 +40,9 @@ def main():
     # Create gevent WSGI server
     wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
                              app.wsgi_app)
-                            # certfile=settings.CERT_FILE,
-                            # keyfile=settings.KEY_FILE,
-                            # ca_certs=settings.CA_CERTS)
+                            # certfile=config["CERT_FILE"],
+                            # keyfile=config["KEY_FILE"],
+                            # ca_certs=config["CA_CERTS"])
     # Start gevent WSGI server
     wsgi_server.serve_forever()
 

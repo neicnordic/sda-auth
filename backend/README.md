@@ -7,5 +7,5 @@ docker build -t <image-name> <dockerfile-path>
 
 Run the web server docker container as follows:
 ```
-docker run --rm -d -p 8080:8080 <image-name>
+docker run --rm -d -p 31111:31111 <image-name>
 ```

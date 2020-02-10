@@ -31,7 +31,10 @@ SERVICE_SETTINGS = { "LOG_LEVEL" :  yaml_settings["logLevel"],
                      "ELIXIR_ID" : yaml_settings["elixir"]["id"],
                      "ELIXIR_SECRET" : yaml_settings["elixir"]["secret"],
                      "BIND_ADDRESS" : yaml_settings["bindAddress"],
-                     "PORT" : yaml_settings["port"] }
+                     "PORT" : yaml_settings["port"],
+                     "CERT_FILE" : yaml_settings["certFile"],
+                     "KEY_FILE" : yaml_settings["keyFile"],
+                     "CA_CERTS" : yaml_settings["caCerts"] }
 
 # ENV settings
 
