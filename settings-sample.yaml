@@ -1,14 +1,14 @@
 ---
 logLevel: "DEBUG"
 elixir:
-  redirectUri: "http://localhost.localdomain:31111"
+  redirectUri: "http://localhost:31111"
   id: "XC56EL11xx"
   secret: "wHPVQaYXmdDHg"
-bindAddress: "127.0.0.1"
+bindAddress: "localhost"
 port: 31111
-serverName: "localhost.localdomain:31111"
+serverName: "localhost:31111"
 urlScheme: "http"
-development: true
+development: True
 # Generated with os.urandom(24).hex()
 secretKey: "de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff"
 certFile: "elixir.ca.crt"

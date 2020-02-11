@@ -42,6 +42,11 @@ def redirection():
     return "You have been redirected here"
 
 
+@auth.error_view
+def error_view_oidc(error=None, error_description=None):
+ return jsonify({'error': error, 'message': error_description})
+
+
 @elixir_blueprint.route("/login")
 @auth.oidc_auth('default')
 def login_to_elixir():
@@ -66,13 +71,12 @@ def main():
     logging.debug(">>>>> Starting Elixir server at http://{}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
     # Create gevent WSGI server
     wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                             app)
+                             app.wsgi_app)
                             # certfile=config["CERT_FILE"],
                             # keyfile=config["KEY_FILE"],
                             # ca_certs=config["CA_CERTS"])
     # Start gevent WSGI server
     wsgi_server.serve_forever()
-    #app.run()
 
 
 if __name__ == "__main__":
