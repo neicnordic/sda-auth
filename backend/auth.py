@@ -26,4 +26,5 @@ _PROVIDER_METADATA = ProviderMetadata(issuer=_ISSUER_URL,
                                      jwks_uri=_JWKS_URL)
 
 PROVIDER_CONFIG = ProviderConfiguration(provider_metadata=_PROVIDER_METADATA,
-                                        client_metadata=_CLIENT_METADATA)
+                                        client_metadata=_CLIENT_METADATA,
+                                        auth_request_params={"redirect_uri": config["ELIXIR_REDIRECT_URI"]})

@@ -8,8 +8,11 @@ __pycache__/
 # vscode
 .vscode
 
-# settings
-settings-prod.yaml
+# deployment
+mock_server/
+deployment/
+Dockerfile-mock
+Dockerfile-prod
 
 # Distribution / packaging
 .Python

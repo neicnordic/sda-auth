@@ -23,7 +23,7 @@ app.config.update({'SERVER_NAME': config['SERVER_NAME'],
                    'SECRET_KEY': config['SECRET_KEY'],
                    'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=1).total_seconds(),
                    'PREFERRED_URL_SCHEME': config['URL_SCHEME'],
-                   'DEBUG': config['DEVELOPMENT']})
+                   'DEBUG': True})
 
 # Setup OIDC Authenticator
 auth = OIDCAuthentication({'default': auth.PROVIDER_CONFIG}, app)
@@ -47,7 +47,7 @@ def error_view_oidc(error=None, error_description=None):
  return jsonify({'error': error, 'message': error_description})
 
 
-@elixir_blueprint.route("/login")
+@elixir_blueprint.route("/auth")
 @auth.oidc_auth('default')
 def login_to_elixir():
     user_session = UserSession(flask.session)
@@ -56,10 +56,9 @@ def login_to_elixir():
                    userinfo=user_session.userinfo)
 
 
-@elixir_blueprint.route("/logout")
-@auth.oidc_logout
-def logout_from_elixir():
-    return "You have been successfully logged out from Elixir AAI"
+@elixir_blueprint.route("/login")
+def callback_uri():
+    return "You have been successfully logged in to Elixir AAI"
 
 
 def start_app(flask_app):
@@ -70,14 +69,14 @@ def main():
     start_app(app)
     logging.debug(">>>>> Starting Elixir server at http://{}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
     # Create gevent WSGI server
-    wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                             app.wsgi_app)
+    #wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
+                             #app.wsgi_app)
                             # certfile=config["CERT_FILE"],
                             # keyfile=config["KEY_FILE"],
                             # ca_certs=config["CA_CERTS"])
     # Start gevent WSGI server
-    wsgi_server.serve_forever()
-
+    #wsgi_server.serve_forever()
+    app.run(host=config["BIND_ADDRESS"], port=config["PORT"])
 
 if __name__ == "__main__":
     main()
