@@ -13,10 +13,9 @@ if config["DEVELOPMENT"] == True:
 else:
     _AUTHORIZE_URL = "https://login.elixir-czech.org/oidc/authorize"
     _ACCESS_TOKEN_URL = "https://login.elixir-czech.org/oidc/token"
-    _JWKS_URL = ""
+    _JWKS_URL = "https://login.elixir-czech.org/oidc/jwk"
     _USERINFO_ENDPOINT = "https://login.elixir-czech.org/oidc/userinfo"
     _ISSUER_URL =  "https://login.elixir-czech.org/oidc"
-
 
 _CLIENT_METADATA = ClientMetadata(client_id=_CLIENT_ID, client_secret=_CLIENT_SECRET)
 

@@ -22,8 +22,8 @@ app.config.update({'SERVER_NAME': config['SERVER_NAME'],
                    #"OIDC_REDIRECT_ENDPOINT": config["ELIXIR_REDIRECT_URI"],
                    'SECRET_KEY': config['SECRET_KEY'],
                    'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=1).total_seconds(),
-                   'PREFERRED_URL_SCHEME': 'http',
-                   'DEBUG': True})
+                   'PREFERRED_URL_SCHEME': config['URL_SCHEME'],
+                   'DEBUG': config['DEVELOPMENT']})
 
 # Setup OIDC Authenticator
 auth = OIDCAuthentication({'default': auth.PROVIDER_CONFIG}, app)
