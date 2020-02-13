@@ -1,7 +1,7 @@
 ---
 logLevel: "DEBUG"
 elixir:
-  redirectUri: "http://localhost:31111/login"
+  redirectUri: "/elixir/login"
   id: "XC56EL11xx"
   secret: "wHPVQaYXmdDHg"
 bindAddress: "localhost"

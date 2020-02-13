@@ -7,7 +7,7 @@ import auth
 from gevent.pywsgi import WSGIServer
 import flask
 from flask import (
-    Blueprint, Flask, request, jsonify, redirect, url_for
+    Blueprint, Flask, request, jsonify, redirect, url_for, render_template
 )
 from flask_pyoidc import OIDCAuthentication
 from flask_pyoidc.provider_configuration import ProviderConfiguration
@@ -19,7 +19,7 @@ logging.basicConfig(level=config["LOG_LEVEL"])
 app = Flask(__name__, template_folder="../frontend/templates", static_folder="../frontend/static")
 
 app.config.update({'SERVER_NAME': config['SERVER_NAME'],
-                   #"OIDC_REDIRECT_ENDPOINT": config["ELIXIR_REDIRECT_URI"],
+                   "OIDC_REDIRECT_ENDPOINT": config["ELIXIR_REDIRECT_URI"],
                    'SECRET_KEY': config['SECRET_KEY'],
                    'PERMANENT_SESSION_LIFETIME': datetime.timedelta(days=1).total_seconds(),
                    'PREFERRED_URL_SCHEME': config['URL_SCHEME'],
@@ -37,28 +37,30 @@ def auth_home():
     return app.send_static_file("index.html")
 
 
-@app.route("/redirect_uri")
-def redirection():
-    return "You have been redirected here"
-
-
 @auth.error_view
 def error_view_oidc(error=None, error_description=None):
- return jsonify({'error': error, 'message': error_description})
+    return jsonify({'error': error, 'message': error_description})
 
 
 @elixir_blueprint.route("/auth")
 @auth.oidc_auth('default')
 def login_to_elixir():
     user_session = UserSession(flask.session)
-    return jsonify(access_token=user_session.access_token,
-                   id_token=user_session.id_token,
-                   userinfo=user_session.userinfo)
+    return render_template("successful_login.html",
+                    user_name=user_session.userinfo['sub'],
+                    access_token=user_session.access_token)
 
 
 @elixir_blueprint.route("/login")
 def callback_uri():
-    return "You have been successfully logged in to Elixir AAI"
+    resp = jsonify(success=True)
+    return resp
+
+
+@elixir_blueprint.route("/logout")
+@auth.oidc_logout
+def logout_from_elixir():
+    return "You have been successfully logged out from Elixir AAI"
 
 
 def start_app(flask_app):

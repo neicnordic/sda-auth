@@ -15,7 +15,7 @@ else:
     _ACCESS_TOKEN_URL = "https://login.elixir-czech.org/oidc/token"
     _JWKS_URL = "https://login.elixir-czech.org/oidc/jwk"
     _USERINFO_ENDPOINT = "https://login.elixir-czech.org/oidc/userinfo"
-    _ISSUER_URL =  "https://login.elixir-czech.org/oidc"
+    _ISSUER_URL = "https://login.elixir-czech.org/oidc/"
 
 _CLIENT_METADATA = ClientMetadata(client_id=_CLIENT_ID, client_secret=_CLIENT_SECRET)
 
@@ -26,5 +26,5 @@ _PROVIDER_METADATA = ProviderMetadata(issuer=_ISSUER_URL,
                                      jwks_uri=_JWKS_URL)
 
 PROVIDER_CONFIG = ProviderConfiguration(provider_metadata=_PROVIDER_METADATA,
-                                        client_metadata=_CLIENT_METADATA,
-                                        auth_request_params={"redirect_uri": config["ELIXIR_REDIRECT_URI"]})
+                                        client_metadata=_CLIENT_METADATA)
+                                        #auth_request_params={"redirect_uri": config["ELIXIR_REDIRECT_URI"]})

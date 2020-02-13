@@ -7,7 +7,7 @@ services:
       - CLIENT_ID=XC56EL11xx
       - HOSTNAME=localhost
       - CLIENT_SECRET=wHPVQaYXmdDHg
-      - CLIENT_REDIRECT_URI=http://localhost:31111/redirect_uri
+      - CLIENT_REDIRECT_URI=http://localhost:31111/elixir/login
       - CLIENT_LOGOUT_REDIRECT_URI=http://localhost:31111/logout-redirect
     ports:
       - 9090:9090
