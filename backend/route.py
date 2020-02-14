@@ -4,6 +4,7 @@ import json
 import logging
 import datetime
 import auth
+from auth import revoke_token
 from gevent.pywsgi import WSGIServer
 import flask
 from flask import (
@@ -26,7 +27,7 @@ app.config.update({'SERVER_NAME': config['SERVER_NAME'],
                    'DEBUG': True})
 
 # Setup OIDC Authenticator
-auth = OIDCAuthentication({'default': auth.PROVIDER_CONFIG}, app)
+authenticator = OIDCAuthentication({'default': auth.PROVIDER_CONFIG}, app)
 
 # Start the Elixir Blueprint
 elixir_blueprint = Blueprint("auth", __name__, url_prefix="/elixir")
@@ -37,13 +38,13 @@ def auth_home():
     return app.send_static_file("index.html")
 
 
-@auth.error_view
+@authenticator.error_view
 def error_view_oidc(error=None, error_description=None):
     return jsonify({'error': error, 'message': error_description})
 
 
 @elixir_blueprint.route("/auth")
-@auth.oidc_auth('default')
+@authenticator.oidc_auth('default')
 def login_to_elixir():
     user_session = UserSession(flask.session)
     return render_template("successful_login.html",
@@ -58,9 +59,10 @@ def callback_uri():
 
 
 @elixir_blueprint.route("/logout")
-@auth.oidc_logout
+@revoke_token
+@authenticator.oidc_logout
 def logout_from_elixir():
-    return "You have been successfully logged out from Elixir AAI"
+    return "Logout completed"
 
 
 def start_app(flask_app):
@@ -69,16 +71,16 @@ def start_app(flask_app):
 
 def main():
     start_app(app)
-    logging.debug(">>>>> Starting Elixir server at http://{}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
+    logging.debug(">>>>> Starting Elixir server at {}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
     # Create gevent WSGI server
-    #wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                             #app.wsgi_app)
+    wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
+                              app.wsgi_app)
                             # certfile=config["CERT_FILE"],
                             # keyfile=config["KEY_FILE"],
                             # ca_certs=config["CA_CERTS"])
     # Start gevent WSGI server
-    #wsgi_server.serve_forever()
-    app.run(host=config["BIND_ADDRESS"], port=config["PORT"])
+    wsgi_server.serve_forever()
+    #app.run(host=config["BIND_ADDRESS"], port=config["PORT"])
 
 if __name__ == "__main__":
     main()
