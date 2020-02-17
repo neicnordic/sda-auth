@@ -1,0 +1,17 @@
+<!doctype html>
+<head>
+   <meta charset="utf-8" />
+   <title>Login: Elixir authentication</title>
+</head>
+<body>
+    <div style="max-width:13cm">
+        <p> Welcome, {{user_name}} </p>
+        <p> Your access token is the following: <p>
+        <textarea readonly=true rows="6" cols="70">{{access_token}}</textarea>
+    </div>
+    <div class="container">
+        <form method="get" action="/">
+            <input type="submit" value="Continue" >
+        </form>
+    </div>
+</body>

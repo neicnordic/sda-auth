@@ -57,6 +57,7 @@ def revoke_token(fn):
                     return fn(*args, **kwargs)
             else:
                 return fn(*args, **kwargs)
+        return fn(*args, **kwargs)
     return wrapped
 
 
