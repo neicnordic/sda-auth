@@ -45,9 +45,9 @@ def error_view_oidc(error=None, error_description=None):
 
 @elixir_blueprint.route("/auth")
 @authenticator.oidc_auth('default')
-def login_to_elixir():
+def login_with_elixir():
     user_session = UserSession(flask.session)
-    return render_template("successful_login.html",
+    return render_template("successful_elixir_login.html",
                     user_name=user_session.userinfo['sub'],
                     access_token=user_session.access_token)
 
