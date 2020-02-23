@@ -1,6 +1,6 @@
 FROM python:3.7.6-slim
 
-WORKDIR /elixir-auth
+WORKDIR /sda-auth
 
 COPY . ./
 

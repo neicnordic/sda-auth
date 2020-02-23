@@ -20,9 +20,12 @@ spec:
         fsGroup: 1000
       containers:
       - name: auth-server
-        image: "nbisweden/elixir-auth-srv:stable" 
+        image: "novella/sda-auth:test1" 
         ports:
         - containerPort: 8080
+        env:
+          - name: "TEST_ENV"
+            value: "hello world"
 ---
 apiVersion: v1
 kind: Service
