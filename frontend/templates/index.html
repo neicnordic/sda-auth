@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block app_content %}
+<div class="jumbotron text-center">
+    <div class="row justify-content-md-center">
+    <h3>SDA authentication service</h3>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col">
+        For logging in with Elixir please click here:
+        <form method="get" action="{{ url_for('elixir.login')}}">
+            <input type="submit" class='button' id='elixir_button' value="Log in with Elixir" >
+        </form>
+        </div>
+        <div class="col">
+        For logging in with EGA please click here:
+        <form method="get" action="{{ url_for('ega.login')}}">
+            <input type="submit" class='button' id='ega_button' value="Log in with EGA" >
+        </form>
+        </div>
+    </div>
+</div>
+    <style>
+        h2 {
+            size: 6em;
+        }
+        .button {
+            border: none;
+            font-size: 15px;
+            padding: 5px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            opacity: 0.7;
+        }
+        #ega_button {
+            background-color: #91978d;
+        }
+        #elixir_button {
+            background-color: #96a4bd;
+        }
+    </style>
+
+{% endblock %}
