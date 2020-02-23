@@ -40,24 +40,25 @@ PROVIDER_CONFIG = ProviderConfiguration(provider_metadata=_PROVIDER_METADATA,
 def revoke_token(fn):
     @wraps(fn)
     def wrapped(*args, **kwargs):
-        if config["DEVELOPMENT"] == False:
+        if config["DEVELOPMENT"]:
+            return fn(*args, **kwargs)
+        else:
             logging.debug('Revoking token...')
             user_session = handle_uninitialised_session()
-            if user_session is not None:
+            if user_session is None:
+                return fn(*args, **kwargs)
+            else:
                 token_payload = {"token": user_session.access_token}
                 response = requests.get(_REVOCATION_URL,
                                         params=token_payload,
                                         auth=HTTPBasicAuth(config["ELIXIR_ID"],
                                                            config["ELIXIR_SECRET"]))
                 if response.status_code == 200:
-                    logging.debug("Your token has been successfully revoked")
+                    logging.info("Your token has been successfully revoked")
                     return fn(*args, **kwargs)
                 else:
-                    logging.debug(f'{response.status_code}: something went wrong with token revocation')
+                    logging.warning(f'{response.status_code}: {response.content}')
                     return fn(*args, **kwargs)
-            else:
-                return fn(*args, **kwargs)
-        return fn(*args, **kwargs)
     return wrapped
 
 
