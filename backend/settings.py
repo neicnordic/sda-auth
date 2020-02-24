@@ -26,19 +26,19 @@ except FileNotFoundError:
 yaml_settings = yaml.safe_load(yaml_settings_fh)
 yaml_settings_fh.close()
 
-SERVICE_SETTINGS = { "LOG_LEVEL" :  yaml_settings["logLevel"],
-                     "ELIXIR_REDIRECT_URI" : yaml_settings["elixir"]["redirectUri"],
-                     "ELIXIR_ID" : yaml_settings["elixir"]["id"],
-                     "ELIXIR_SECRET" : yaml_settings["elixir"]["secret"],
-                     "BIND_ADDRESS" : yaml_settings["bindAddress"],
-                     "PORT" : yaml_settings["port"],
-                     "SERVER_NAME" : yaml_settings["serverName"],
-                     "URL_SCHEME" : yaml_settings["urlScheme"],
-                     "DEVELOPMENT" : yaml_settings["development"],
-                     "SECRET_KEY" : yaml_settings["secretKey"],
-                     "CERT_FILE" : yaml_settings["certFile"],
-                     "KEY_FILE" : yaml_settings["keyFile"],
-                     "CA_CERTS" : yaml_settings["caCerts"] }
+SERVICE_SETTINGS = { "LOG_LEVEL" :  yaml_settings.get("logLevel", "DEBUG"),
+                     "ELIXIR_REDIRECT_URI" : yaml_settings.get("elixir", {}).get("redirectUri", "/elixir/login"),
+                     "ELIXIR_ID" : yaml_settings.get("elixir", {}).get("id", "XC56EL11xx"),
+                     "ELIXIR_SECRET" : yaml_settings.get("elixir", {}).get("secret", "wHPVQaYXmdDHg"),
+                     "BIND_ADDRESS" : yaml_settings.get("bindAddress", "localhost"),
+                     "PORT" : yaml_settings.get("port", 31111),
+                     "SERVER_NAME" : yaml_settings.get("serverName", "localhost:31111"),
+                     "URL_SCHEME" : yaml_settings.get("urlScheme", "http"),
+                     "DEVELOPMENT" : yaml_settings.get("development", True),
+                     "SECRET_KEY" : yaml_settings.get("secretKey", "de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff"),
+                     "CERT_FILE" : yaml_settings.get("certFile", ""),
+                     "KEY_FILE" : yaml_settings.get("keyFile", ""),
+                     "CA_CERTS" :  yaml_settings.get("caCerts", "") }
 
 # ENV settings
 
