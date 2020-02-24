@@ -1,4 +1,4 @@
-**Running the production setup**
+# Production setup
 
 ## Build a Docker image
 
