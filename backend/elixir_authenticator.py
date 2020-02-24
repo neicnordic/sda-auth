@@ -10,7 +10,7 @@ import logging
 _CLIENT_ID = config['ELIXIR_ID']
 _CLIENT_SECRET = config['ELIXIR_SECRET']
 
-if config["DEVELOPMENT"] == True:
+if config["DEVELOPMENT"]:
     _AUTHORIZE_URL = "http://localhost:9090/auth"
     _ACCESS_TOKEN_URL = "http://localhost:9090/token"
     _JWKS_URL = "http://localhost:9090/certs"
