@@ -7,4 +7,4 @@ COPY . ./
 RUN apt update && \
     pip3 install -r backend/requirements.txt
 
-CMD ["python3", "backend/route.py", "--settings_file", "settings-prod.yaml"]
+CMD ["python3", "backend/route.py", "--settings_file", "/vault/secrets/credentials.yaml"]
