@@ -13,6 +13,19 @@ spec:
       labels:
         run: auth-server
     spec:
+      annotations:
+        "vault.hashicorp.com/agent-inject": "true"
+        "vault.hashicorp.com/role": "lega-service"
+        "vault.hashicorp.com/agent-inject-secret-credentials.yaml": "lega-secrets/auth_creds"
+        "vault.hashicorp.com/agent-inject-template-credentials.yaml": |
+          {{  with secret "lega-secrets/auth_creds" }}
+          elexir:
+            id: {{  .Data.elexir_id }}
+            secret: {{  .Data.elexir_secret }}
+          ega:
+            user: {{  .Data.ega_user }}
+            pass: {{  .Data.user_pass }}
+          {{  end }}
       securityContext:
         runAsNonRoot: true
         runAsGroup: 1000
@@ -24,8 +37,27 @@ spec:
         ports:
         - containerPort: 8080
         env:
-          - name: "TEST_ENV"
-            value: "hello world"
+          - name: "LOG_LEVEL"
+            value: "DEBUG"
+          - name: "ELIXIR_REDIRECT_URI"
+            value: "/elixir/login"
+          - name: "BIND_ADDRESS"
+            value: "0.0.0.0"
+          - name: "PORT"
+            value: 8080
+          - name: "SERVER_NAME"
+            value: "login.ega.nbis.se"
+          - name: "URL_SCHEME"
+            value: "https"
+          - name: "DEVELOPMENT"
+            value: False
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
