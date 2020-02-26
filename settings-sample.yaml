@@ -12,6 +12,8 @@ elixir:
   revocationUrl: "http://localhost:9090"
 cega:
   authUrl: "http://localhost:8443/lega/v1/legas/users/"
+  id: "dummy"
+  secret: "dummy"
 bindAddress: "localhost"
 port: 31111
 serverName: "localhost:31111"
