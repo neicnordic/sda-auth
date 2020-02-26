@@ -39,7 +39,9 @@ async def user(request):
     if not auth_header:
         raise web.HTTPUnauthorized(text=f'Protected access\n')
     _, token = auth_header.split(None, 1)  # Skipping the Basic keyword
+    LOG.info(f'Token is {token}')
     instance, passwd = b64decode(token).decode().split(':', 1)
+    LOG.info(f'I am instance {instance} and the password is {passwd}')
     info = instances.get(instance)
     if info is None or info != passwd:
         raise web.HTTPUnauthorized(text=f'Protected access\n')
