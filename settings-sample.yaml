@@ -4,6 +4,14 @@ elixir:
   redirectUri: "/elixir/login"
   id: "XC56EL11xx"
   secret: "wHPVQaYXmdDHg"
+  authUrl: "http://localhost:9090/auth"
+  tokenUrl: "http://localhost:9090/token"
+  certsUrl: "http://localhost:9090/certs"
+  userInfo: "http://localhost:9090/me"
+  issuer: "http://localhost:9090"
+  revocationUrl: "http://localhost:9090"
+cega:
+  authUrl: "http://localhost:8443/lega/v1/legas/users/"
 bindAddress: "localhost"
 port: 31111
 serverName: "localhost:31111"
