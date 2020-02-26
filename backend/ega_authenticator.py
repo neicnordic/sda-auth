@@ -8,16 +8,13 @@ import json
 from flask import render_template, jsonify, redirect, url_for
 
 
-if config["DEVELOPMENT"]:
-    _CEGA_AUTH_URL = 'http://localhost:8443/lega/v1/legas/users/'
-else:
-    _CEGA_AUTH_URL = 'https://egatest.crg.eu/lega/v1/legas/users/'
+_AUTHORISATION_URL = config['CEGA_AUTH_URL']
 
 
 def authenticate_with_ega(username, password):
     ega_user = EgaUser(ega_id=username, ega_secret=password)
     id_type_payload = {"idType": "username"}
-    response = requests.get(f'{_CEGA_AUTH_URL}{ega_user.get_id()}',
+    response = requests.get(f'{_AUTHORISATION_URL}{ega_user.get_id()}',
                                 params=id_type_payload,
                                 auth=HTTPBasicAuth(ega_user.get_id(),
                                                    ega_user.get_secret()))

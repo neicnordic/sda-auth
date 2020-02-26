@@ -7,28 +7,21 @@ from flask_pyoidc.user_session import UserSession, UninitialisedSession
 from requests.auth import HTTPBasicAuth
 import logging
 
+
 _CLIENT_ID = config['ELIXIR_ID']
 _CLIENT_SECRET = config['ELIXIR_SECRET']
-
-if config["DEVELOPMENT"]:
-    _AUTHORIZE_URL = "http://localhost:9090/auth"
-    _ACCESS_TOKEN_URL = "http://localhost:9090/token"
-    _JWKS_URL = "http://localhost:9090/certs"
-    _USERINFO_ENDPOINT = "http://localhost:9090/me"
-    _ISSUER_URL = "http://localhost:9090"
-else:
-    _AUTHORIZE_URL = "https://login.elixir-czech.org/oidc/authorize"
-    _ACCESS_TOKEN_URL = "https://login.elixir-czech.org/oidc/token"
-    _JWKS_URL = "https://login.elixir-czech.org/oidc/jwk"
-    _USERINFO_ENDPOINT = "https://login.elixir-czech.org/oidc/userinfo"
-    _ISSUER_URL = "https://login.elixir-czech.org/oidc/"
-    _REVOCATION_URL = "https://login.elixir-czech.org/oidc/revoke"
+_AUTHORISATION_URL = config['ELIXIR_AUTH_URL']
+_ACCESS_TOKEN_URL = config['ELIXIR_TOKEN_URL']
+_JWKS_URL = config['ELIXIR_CERTS_URL']
+_USERINFO_URL = config['ELIXIR_USERINFO_URL']
+_ISSUER_URL = config['ELIXIR_ISSUER_URL']
+_TOKEN_REVOCATION_URL = config['ELIXIR_REVOCATION_URL']
 
 _CLIENT_METADATA = ClientMetadata(client_id=_CLIENT_ID, client_secret=_CLIENT_SECRET)
 
 _PROVIDER_METADATA = ProviderMetadata(issuer=_ISSUER_URL,
-                                     authorization_endpoint=_AUTHORIZE_URL,
-                                     userinfo_endpoint=_USERINFO_ENDPOINT,
+                                     authorization_endpoint=_AUTHORISATION_URL,
+                                     userinfo_endpoint=_USERINFO_URL,
                                      token_endpoint=_ACCESS_TOKEN_URL,
                                      jwks_uri=_JWKS_URL)
 
@@ -49,7 +42,7 @@ def revoke_token(fn):
                 return fn(*args, **kwargs)
             else:
                 token_payload = {"token": user_session.access_token}
-                response = requests.get(_REVOCATION_URL,
+                response = requests.get(_TOKEN_REVOCATION_URL,
                                         params=token_payload,
                                         auth=HTTPBasicAuth(config["ELIXIR_ID"],
                                                            config["ELIXIR_SECRET"]))
