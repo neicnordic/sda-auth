@@ -4,17 +4,7 @@ import yaml
 import logging
 
 
-# YAML file settings
-
-ARG = "--settings_file"
-SETTINGS_FILE = "settings-sample.yaml"
-
-if ARG in sys.argv:
-    try:
-        SETTINGS_FILE = sys.argv[sys.argv.index(ARG)+1]
-    except IndexError:
-        logging.error("No argument for --settings_file")
-        sys.exit(1)
+SETTINGS_FILE = os.environ.get("CONF_FILE_PATH", "settings-sample.yaml")
 
 try:
     current_dir = os.path.dirname(os.path.realpath(__file__))
