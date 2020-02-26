@@ -13,7 +13,7 @@ from flask import (
 import elixir_blueprint, ega_blueprint
 import elixir_authenticator
 from flask_pyoidc import OIDCAuthentication
-from flask_login import UserMixin, login_manager, LoginManager
+from flask_login import login_manager, LoginManager
 from settings import SERVICE_SETTINGS as config
 from models import EgaUser
 
