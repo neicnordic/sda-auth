@@ -6,6 +6,6 @@ class EgaUser(flask_login.UserMixin):
         self.ega_secret = ega_secret
         super()
     def get_id(self):
-        return (self.ega_id)
+        return self.ega_id
     def get_secret(self):
-        return (self.ega_secret)
+        return self.ega_secret
