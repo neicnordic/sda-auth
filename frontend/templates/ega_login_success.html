@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block app_content %}
+<div class="jumbotron text-center">
+        <p> Welcome, {{user_name}} </p>
+        <p> Your secret hash is the following: <p>
+        <textarea readonly=true rows="6" cols="70">{{secret_hash}}</textarea>
+        <form method="get" action="{{ url_for('index')}}">
+            <input type="submit" value="Continue" >
+        </form>
+        <form method="get" action="{{ url_for('ega.logout')}}">
+            <input type="submit" value="Log out" >
+        </form>
+</div>
+{% endblock %}

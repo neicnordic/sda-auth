@@ -11,7 +11,7 @@ __pycache__/
 # deployment
 mock_server/
 deployment/
-Dockerfile-mock
+Dockerfile
 Dockerfile-prod
 
 # Distribution / packaging

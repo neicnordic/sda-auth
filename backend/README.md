@@ -1,11 +1,14 @@
-**Running the elixir-auth web server container**
+**Running the development setup**
 
-To build the image:
-```
-docker build -t <image-name> <dockerfile-path>
+Start the mock services located under the mock-server folder:
+
+```bash
+docker-compose up -d --force-recreate
 ```
 
-Run the web server docker container as follows:
-```
-docker run --rm -d -p 31111:31111 <image-name>
+And to start the backend, you may run:
+
+```bash
+pip3 install -r requirements.txt
+python3 backend/route.py
 ```

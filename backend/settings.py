@@ -4,17 +4,7 @@ import yaml
 import logging
 
 
-# YAML file settings
-
-ARG = "--settings_file"
-SETTINGS_FILE = "settings-sample.yaml"
-
-if ARG in sys.argv:
-    try:
-        SETTINGS_FILE = sys.argv[sys.argv.index(ARG)+1]
-    except IndexError:
-        logging.error("No argument for --settings_file")
-        sys.exit(1)
+SETTINGS_FILE = os.environ.get("CONF_FILE_PATH", "settings-sample.yaml")
 
 try:
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -26,25 +16,25 @@ except FileNotFoundError:
 yaml_settings = yaml.safe_load(yaml_settings_fh)
 yaml_settings_fh.close()
 
-SERVICE_SETTINGS = { "LOG_LEVEL" :  yaml_settings["logLevel"],
-                     "ELIXIR_REDIRECT_URI" : yaml_settings["elixir"]["redirectUri"],
-                     "ELIXIR_ID" : yaml_settings["elixir"]["id"],
-                     "ELIXIR_SECRET" : yaml_settings["elixir"]["secret"],
-                     "BIND_ADDRESS" : yaml_settings["bindAddress"],
-                     "PORT" : yaml_settings["port"],
-                     "SERVER_NAME" : yaml_settings["serverName"],
-                     "URL_SCHEME" : yaml_settings["urlScheme"],
-                     "DEVELOPMENT" : yaml_settings["development"],
-                     "SECRET_KEY" : yaml_settings["secretKey"],
-                     "CERT_FILE" : yaml_settings["certFile"],
-                     "KEY_FILE" : yaml_settings["keyFile"],
-                     "CA_CERTS" : yaml_settings["caCerts"] }
+SERVICE_SETTINGS = { "LOG_LEVEL" : os.environ.get("LOG_LEVEL", yaml_settings.get("logLevel", "DEBUG")),
+                     "ELIXIR_REDIRECT_URI" : os.environ.get("ELIXIR_REDIRECT_URI", yaml_settings.get("elixir", {}).get("redirectUri", "/elixir/login")),
+                     "ELIXIR_ID" : os.environ.get("ELIXIR_ID", yaml_settings.get("elixir", {}).get("id", "XC56EL11xx")),
+                     "ELIXIR_SECRET" : os.environ.get("ELIXIR_SECRET", yaml_settings.get("elixir", {}).get("secret", "wHPVQaYXmdDHg")),
+                     "ELIXIR_AUTH_URL" : os.environ.get("ELIXIR_AUTH_URL", yaml_settings.get("elixir", {}).get("authUrl", "http://localhost:9090/auth")),
+                     "ELIXIR_TOKEN_URL" : os.environ.get("ELIXIR_TOKEN_URL", yaml_settings.get("elixir", {}).get("tokenUrl", "http://localhost:9090/token")),
+                     "ELIXIR_CERTS_URL" : os.environ.get("ELIXIR_CERTS_URL", yaml_settings.get("elixir", {}).get("certsUrl", "http://localhost:9090/certs")),
+                     "ELIXIR_USERINFO_URL" : os.environ.get("ELIXIR_USERINFO_URL", yaml_settings.get("elixir", {}).get("userInfo", "http://localhost:9090/me")),
+                     "ELIXIR_ISSUER_URL" : os.environ.get("ELIXIR_ISSUER_URL", yaml_settings.get("elixir", {}).get("issuer", "http://localhost:9090")),
+                     "ELIXIR_REVOCATION_URL" : os.environ.get("ELIXIR_REVOCATION_URL", yaml_settings.get("elixir", {}).get("revocationUrl", "http://localhost:9090")),
+                     "CEGA_AUTH_URL" : os.environ.get("CEGA_AUTH_URL", yaml_settings.get("cega", {}).get("authUrl", "http://localhost:8443/lega/v1/legas/users/")),
+                     "CEGA_ID" : os.environ.get("CEGA_ID", yaml_settings.get("cega", {}).get("id", "dummy")),
+                     "CEGA_SECRET" : os.environ.get("CEGA_SECRET", yaml_settings.get("cega", {}).get("secret", "dummy")),
+                     "BIND_ADDRESS" : os.environ.get("BIND_ADDRESS", yaml_settings.get("bindAddress", "localhost")),
+                     "PORT" : int(os.environ.get("PORT", yaml_settings.get("port", 31111))),
+                     "SERVER_NAME" : os.environ.get("SERVER_NAME", yaml_settings.get("serverName", "localhost:31111")),
+                     "URL_SCHEME" : os.environ.get("URL_SCHEME", yaml_settings.get("urlScheme", "http")),
+                     "SECRET_KEY" : os.environ.get("SECRET_KEY", yaml_settings.get("secretKey", "de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff")),
+                     "CERT_FILE" : os.environ.get("CERT_FILE", yaml_settings.get("tls", {}).get("certFile", "")),
+                     "KEY_FILE" : os.environ.get("KEY_FILE", yaml_settings.get("tls", {}).get("keyFile", "")),
+                     "CA_CERTS" : os.environ.get("CA_CERTS", yaml_settings.get("tls", {}).get("caCerts", "")) }
 
-# ENV settings
-
-def overwrite_with_env(env_var):
-    if env_var in os.environ:
-        SERVICE_SETTINGS[env_var] = os.environ.get(env_var)
-
-for var in SERVICE_SETTINGS.keys():
-    overwrite_with_env(var)

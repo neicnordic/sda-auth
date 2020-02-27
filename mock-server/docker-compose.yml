@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  mock_user_service:
+  oidc_service:
     image: quay.io/appvia/mock-oidc-user-server:v0.0.2
     environment:
       - PORT=9090
@@ -11,3 +11,17 @@ services:
       - CLIENT_LOGOUT_REDIRECT_URI=http://localhost:31111/logout-redirect
     ports:
       - 9090:9090
+  cega_service:
+    image: egarchive/lega-base:release.v0.2.0
+    volumes:
+      - ./cega-users:/cega
+    command: ["python", "/cega/cega-mock.py", "0.0.0.0", "8443", "/cega/users.json"]
+    environment:
+      - LEGA_INSTANCES=dummy
+      - CEGA_USERS_PASSWORD=dummy
+      - CEGA_USERS_USER=dummy
+    ports:
+      - 8443:8443
+  
+
+
