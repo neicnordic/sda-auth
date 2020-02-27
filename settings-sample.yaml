@@ -21,6 +21,7 @@ urlScheme: "http"
 development: True
 # Generated with os.urandom(24).hex()
 secretKey: "de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff"
-certFile: "elixir.ca.crt"
-keyFile: "elixir.ca.key"
-caCerts: "root.ca.crt"
+tls:
+  certFile: "authsvc.ca.crt"
+  keyFile: "authsvc.ca.key"
+  caCerts: "authsvc.ca.crt"
