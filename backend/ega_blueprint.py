@@ -1,10 +1,11 @@
 import flask
-from flask import Blueprint, render_template, jsonify, url_for, redirect
+from flask import Blueprint, render_template, jsonify, url_for, redirect, flash
 from flask_pyoidc.user_session import UserSession
 import ega_authenticator
 import forms
 from models import EgaUser
 import logging
+import os
 
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
 
@@ -18,6 +19,8 @@ def login():
             logging.info("Login form was successfullly validated")
             if ega_authenticator.authenticate_with_ega(username=form.username.data, password=form.password.data):
                 return redirect(url_for("ega.info"), 302)
+            else:
+                flash('Wrong username or password.')
         else:
             logging.info("Login form was not validated")
     return render_template('ega_login_form.html', title='EGA login', form=form)
@@ -34,6 +37,6 @@ def info():
     if logged_in_user:
         return render_template('ega_login_success.html',
                                user_name=logged_in_user.get_id(),
-                               secret_hash=logged_in_user.get_id())
+                               access_token=os.urandom(128).hex())
     else:
         return redirect(url_for("index"), 302)
