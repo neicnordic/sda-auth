@@ -36,6 +36,6 @@ def info():
     if logged_in_user:
         return render_template('ega_login_success.html',
                                user_name=logged_in_user.get_id(),
-                               secret_hash=logged_in_user.get_id())
+                               access_token=logged_in_user.get_id())
     else:
         return redirect(url_for("index"), 302)
