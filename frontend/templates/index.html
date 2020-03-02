@@ -1,46 +1,26 @@
 {% extends "base.html" %}
 {% block app_content %}
-<div class="jumbotron text-center">
+<div class="jumbotron text-center" role="region">
+  <div class="container" style="max-width: 800px;">
     <div class="row justify-content-md-center">
-    <h3>SDA authentication service</h3>
+      <div class="col-sm">
+        <h3>SDA authentication service</h3>
+      </div>
     </div>
-    <br>
     <div class="row">
-        <div class="col">
-        For logging in with Elixir please click here:
-        <form method="get" action="{{ url_for('elixir.login')}}">
-            <input type="submit" class='button' id='elixir_button' value="Log in with Elixir" >
-        </form>
+        <div class="col-sm py-3">
+          <p class="lead">
+            For logging in with Elixir please click here:
+          </p>
+          <a class="btn btn-primary btn-lg btn-block" href="{{ url_for('elixir.login')}}">Log in with Elixir</a>
         </div>
-        <div class="col">
-        For logging in with EGA please click here:
-        <form method="get" action="{{ url_for('ega.login')}}">
-            <input type="submit" class='button' id='ega_button' value="Log in with EGA" >
-        </form>
+        <div class="col-sm py-3">
+          <p class="lead">
+            For logging in with EGA please click here:
+          </p>
+          <a class="btn btn-primary btn-lg btn-block" href="{{ url_for('ega.login')}}">Log in with EGA</a>
         </div>
     </div>
+  </div>
 </div>
-    <style>
-        h2 {
-            size: 6em;
-        }
-        .button {
-            border: none;
-            font-size: 15px;
-            padding: 5px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .button:hover {
-            opacity: 0.7;
-        }
-        #ega_button {
-            background-color: #91978d;
-        }
-        #elixir_button {
-            background-color: #96a4bd;
-        }
-    </style>
-
 {% endblock %}

@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% block app_content %}
-<div class="jumbotron text-center">
-        <p> Welcome, {{user_name}} </p>
-        <p> Your secret hash is the following: <p>
-        <textarea readonly=true rows="6" cols="70">{{secret_hash}}</textarea>
-        <form method="get" action="{{ url_for('index')}}">
-            <input type="submit" value="Continue" >
-        </form>
-        <form method="get" action="{{ url_for('ega.logout')}}">
-            <input type="submit" value="Log out" >
-        </form>
+<div class="jumbotron" role="region">
+  <div class="container" style="max-width: 600px">
+        <p class="lead text-center">
+          Welcome, {{user_name}}!
+        </p>
+        <p class="text-center">
+          Your access token is the following:
+        <p>
+
+        <pre class="border border-secondary rounded py-2 px-3 my-4" style="user-select: all;"><code>{{access_token}}</code></pre>
+
+        <a href="{{ url_for('index')}}" class="btn btn-primary btn-block">Continue</a>
+        <a href="{{ url_for('elixir.logout')}}" class="btn btn-danger btn-block">Log out</a>
+  </div>
 </div>
 {% endblock %}
