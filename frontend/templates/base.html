@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SDA authentication service</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}"></link>
-<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.js') }}"></link>
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
 </head>
 
 <body>
@@ -25,4 +25,7 @@
         </div>
     </nav>
     {% block app_content %}{% endblock %}
+    <script src="{{ url_for('static', filename='jquery-3.4.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 <body>
+</html>
