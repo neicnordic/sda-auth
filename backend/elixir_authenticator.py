@@ -20,17 +20,17 @@ _TOKEN_REVOCATION_URL = config['ELIXIR_REVOCATION_URL']
 _CLIENT_METADATA = ClientMetadata(client_id=_CLIENT_ID, client_secret=_CLIENT_SECRET)
 
 _PROVIDER_METADATA = ProviderMetadata(issuer=_ISSUER_URL,
-                                     authorization_endpoint=_AUTHORISATION_URL,
-                                     userinfo_endpoint=_USERINFO_URL,
-                                     token_endpoint=_ACCESS_TOKEN_URL,
-                                     jwks_uri=_JWKS_URL)
+                                      authorization_endpoint=_AUTHORISATION_URL,
+                                      userinfo_endpoint=_USERINFO_URL,
+                                      token_endpoint=_ACCESS_TOKEN_URL,
+                                      jwks_uri=_JWKS_URL)
 
 PROVIDER_CONFIG = ProviderConfiguration(provider_metadata=_PROVIDER_METADATA,
                                         client_metadata=_CLIENT_METADATA)
-                                        #auth_request_params={"redirect_uri": config["ELIXIR_REDIRECT_URI"]})
 
 
 def revoke_token(fn):
+    """Revoke Elixir auth token."""
     @wraps(fn)
     def wrapped(*args, **kwargs):
         logging.debug('Revoking token...')
@@ -53,9 +53,10 @@ def revoke_token(fn):
 
 
 def handle_uninitialised_session():
+    """Handle sessions that might not have been initialised."""
     try:
         session = UserSession(flask.session)
         return session
-    except UninitialisedSession as e:
+    except UninitialisedSession:
         logging.debug('The user was already logged out')
         return None

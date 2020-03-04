@@ -1,7 +1,5 @@
 import os
-import sys
 import yaml
-import logging
 
 
 SETTINGS_FILE = os.environ.get("CONF_FILE_PATH", "settings-sample.yaml")
@@ -38,4 +36,3 @@ SERVICE_SETTINGS = { "LOG_LEVEL" : os.environ.get("LOG_LEVEL", yaml_settings.get
                      "CERT_FILE" : os.environ.get("CERT_FILE", yaml_settings.get("tls", {}).get("certFile", "")),
                      "KEY_FILE" : os.environ.get("KEY_FILE", yaml_settings.get("tls", {}).get("keyFile", "")),
                      "CA_CERTS" : os.environ.get("CA_CERTS", yaml_settings.get("tls", {}).get("caCerts", "")) }
-
