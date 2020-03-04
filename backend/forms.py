@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired
 
 
 class EgaLoginForm(FlaskForm):
-    """Class that that represents a EGA login form."""
+    """EGA login form."""
 
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
