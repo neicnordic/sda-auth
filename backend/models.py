@@ -9,7 +9,7 @@ _JWT_ISSUER = config['SERVER_NAME']
 
 
 class EgaUser(flask_login.UserMixin):
-    """Class that that represents a EGA user."""
+    """An EGA user."""
 
     def __init__(self, ega_id, ega_password=None):
         """Construct a user class. It takes id and password as arguments."""
