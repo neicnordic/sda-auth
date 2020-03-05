@@ -36,6 +36,6 @@ def logout():
 
 @elixir_bp.route("/login")
 def callback_uri():
-    """Callback endpoint for login."""
+    """Register callback endpoint for login."""
     resp = jsonify(success=True)
     return resp
