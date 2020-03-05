@@ -1,5 +1,5 @@
-from gevent import monkey
-monkey.patch_all()
+from gevent import monkey # noqa
+monkey.patch_all() # noqa
 
 import logging
 import datetime
