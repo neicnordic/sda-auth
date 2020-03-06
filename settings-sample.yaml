@@ -14,6 +14,7 @@ cega:
   authUrl: "http://localhost:8443/lega/v1/legas/users/"
   id: "dummy"
   secret: "dummy"
+  jwtPrivateKey: "de8b3fe55c7d9fb32de24b842847087"
 bindAddress: "localhost"
 port: 31111
 serverName: "localhost:31111"
