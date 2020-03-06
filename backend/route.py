@@ -1,4 +1,4 @@
-from gevent import monkey # noqa
+from gevent import monkey
 monkey.patch_all() # noqa
 
 import logging
