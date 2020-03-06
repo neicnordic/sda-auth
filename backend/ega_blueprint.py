@@ -5,7 +5,6 @@ import ega_authenticator
 import forms
 from models import EgaUser
 import logging
-import os
 
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
 
@@ -37,6 +36,6 @@ def info():
     if logged_in_user:
         return render_template('ega_login_success.html',
                                user_name=logged_in_user.get_id(),
-                               access_token=os.urandom(128).hex())
+                               access_token=logged_in_user.get_jwt_token())
     else:
         return redirect(url_for("index"), 302)
