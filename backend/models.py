@@ -25,9 +25,13 @@ class EgaUser(flask_login.UserMixin):
     def get_password(self):
         """Return the password of a user instance."""
         return self.ega_password
+
     def get_jwt_token(self):
+        """Return user's jwt token."""
         return self.jwt_token
+
     def generate_jwt_token(self):
+        """Generate a jwt token for a user."""
         jwt_entries={"iss": _JWT_ISSUER,
                      "sub": self.ega_id}
         return jwt.encode({**jwt_entries}, _JWT_PRIVATE_KEY).decode("utf-8")
