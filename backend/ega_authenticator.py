@@ -16,8 +16,7 @@ _CEGA_SECRET = config['CEGA_SECRET']
 
 def authenticate_with_ega(username, password):
     """Sign in with EGA credentials."""
-    ega_user = EgaUser(ega_id=username,
-                       ega_password=password)
+    ega_user = EgaUser(ega_id=username)
 
     id_type_payload = {"idType": "username"}
     response = requests.get(f'{_AUTHORISATION_URL}{ega_user.get_id()}',
@@ -28,7 +27,7 @@ def authenticate_with_ega(username, password):
     if response.status_code == 200:
         password_hash = json.loads(response.text)['response']['result'][0]['passwordHash']
         password_is_correct = verify_password(response_password=password_hash,
-                                              user_password=ega_user.get_password())
+                                              user_password=password)
 
         if password_is_correct:
             flask_login.login_user(ega_user)
