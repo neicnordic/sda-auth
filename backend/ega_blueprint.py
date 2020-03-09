@@ -1,15 +1,14 @@
-import flask
-from flask import Blueprint, render_template, jsonify, url_for, redirect, flash
-from flask_pyoidc.user_session import UserSession
+from flask import Blueprint, render_template, url_for, redirect, flash
 import ega_authenticator
 import forms
-from models import EgaUser
 import logging
 
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
 
+
 @ega_bp.route("/login", methods=['GET', 'POST'])
 def login():
+    """Sign in to EGA."""
     if ega_authenticator.is_logged_in():
         return redirect(url_for("ega.info"), 302)
     else:
@@ -27,11 +26,13 @@ def login():
 
 @ega_bp.route("/logout")
 def logout():
+    """Sign out from EGA."""
     return ega_authenticator.logout_from_ega()
 
 
 @ega_bp.route("/login/info")
 def info():
+    """Display EGA user info."""
     logged_in_user = ega_authenticator.is_logged_in()
     if logged_in_user:
         return render_template('ega_login_success.html',
