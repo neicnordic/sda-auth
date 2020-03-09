@@ -7,7 +7,6 @@ _JWT_PRIVATE_KEY = config['JWT_PRIVATE_KEY']
 _JWT_ISSUER = config['SERVER_NAME']
 
 
-
 class EgaUser(flask_login.UserMixin):
     """An EGA user."""
 
@@ -32,6 +31,6 @@ class EgaUser(flask_login.UserMixin):
 
     def generate_jwt_token(self):
         """Generate a jwt token for a user."""
-        jwt_entries={"iss": _JWT_ISSUER,
-                     "sub": self.ega_id}
+        jwt_entries = {"iss": _JWT_ISSUER,
+                       "sub": self.ega_id}
         return jwt.encode({**jwt_entries}, _JWT_PRIVATE_KEY).decode("utf-8")
