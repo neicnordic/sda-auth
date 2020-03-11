@@ -1,19 +1,19 @@
 import elixir_authenticator
-from flask import Blueprint, render_template, jsonify, redirect, url_for
-from elixir_authenticator import revoke_token
-from route import authenticator
+from flask import Blueprint, render_template, redirect, url_for
+
 
 elixir_bp = Blueprint("elixir", __name__, url_prefix="/elixir")
 
 
-@elixir_bp.route("/auth")
-@authenticator.oidc_auth('default')
 def login():
     """Sign in with Elixir."""
-    return redirect(url_for("elixir.info"), 302)
+    response = elixir_authenticator.authenticate_with_elixir()
+    if response is None:
+        return redirect(url_for("elixir.info"), 302)
+    else:
+        return elixir_authenticator.authenticate_with_elixir()
 
 
-@elixir_bp.route("/auth/info")
 def info():
     """Display Elixir user info."""
     user_session = elixir_authenticator.handle_uninitialised_session()
@@ -26,16 +26,19 @@ def info():
         return redirect(url_for("index"), 302)
 
 
-@elixir_bp.route("/logout")
-@revoke_token
-@authenticator.oidc_logout
 def logout():
     """Sign out from Elixir."""
+    elixir_authenticator.logout_from_elixir()
+    elixir_authenticator.revoke_token()
     return redirect(url_for("index"), 302)
 
 
-@elixir_bp.route("/login")
 def callback_uri():
     """Register callback endpoint for login."""
-    resp = jsonify(success=True)
-    return resp
+    return elixir_authenticator.handle_auth_response()
+
+
+elixir_bp.add_url_rule('/auth', 'login', view_func=login)
+elixir_bp.add_url_rule('/info', 'info', view_func=info)
+elixir_bp.add_url_rule('/logout', 'logout', view_func=logout)
+elixir_bp.add_url_rule('/login', 'callback_uri', view_func=callback_uri, methods=['GET', 'POST'])

@@ -3,14 +3,12 @@ monkey.patch_all() # noqa
 
 import logging
 import datetime
+import elixir_blueprint
+import ega_blueprint
 from gevent.pywsgi import WSGIServer
 from flask import (
     Flask, render_template
 )
-import elixir_blueprint
-import ega_blueprint
-import elixir_authenticator
-from flask_pyoidc import OIDCAuthentication
 from flask_login import LoginManager
 from settings import SERVICE_SETTINGS as config
 from models import EgaUser
@@ -27,9 +25,6 @@ app.config.update({'SERVER_NAME': config['SERVER_NAME'],
                    'PREFERRED_URL_SCHEME': config['URL_SCHEME'],
                    "SESSION_PERMANENT": True,
                    'DEBUG': True})
-
-# Setup OIDC Authenticator
-authenticator = OIDCAuthentication({'default': elixir_authenticator.PROVIDER_CONFIG}, app)
 
 # Setup EGA Authenticator
 ega_login_manager = LoginManager()

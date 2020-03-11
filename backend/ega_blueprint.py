@@ -6,7 +6,6 @@ import logging
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
 
 
-@ega_bp.route("/login", methods=['GET', 'POST'])
 def login():
     """Sign in to EGA."""
     if ega_authenticator.is_logged_in():
@@ -24,13 +23,6 @@ def login():
     return render_template('ega_login_form.html', title='EGA login', form=form)
 
 
-@ega_bp.route("/logout")
-def logout():
-    """Sign out from EGA."""
-    return ega_authenticator.logout_from_ega()
-
-
-@ega_bp.route("/login/info")
 def info():
     """Display EGA user info."""
     logged_in_user = ega_authenticator.is_logged_in()
@@ -40,3 +32,13 @@ def info():
                                access_token=logged_in_user.get_jwt_token())
     else:
         return redirect(url_for("index"), 302)
+
+
+def logout():
+    """Sign out from EGA."""
+    return ega_authenticator.logout_from_ega()
+
+
+ega_bp.add_url_rule('/login', 'login', view_func=login, methods=['GET', 'POST'])
+ega_bp.add_url_rule('/info', 'info', view_func=info)
+ega_bp.add_url_rule('/logout', 'logout', view_func=logout)
