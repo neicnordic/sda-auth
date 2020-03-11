@@ -1,11 +1,12 @@
 from flask_pyoidc.provider_configuration import ProviderConfiguration, ProviderMetadata, ClientMetadata
 from settings import SERVICE_SETTINGS as config
 import requests
-from functools import wraps
 import flask
 from flask_pyoidc.user_session import UserSession, UninitialisedSession
 from requests.auth import HTTPBasicAuth
 import logging
+from route import app
+from flask_pyoidc import OIDCAuthentication
 
 
 _CLIENT_ID = config['ELIXIR_ID']
@@ -28,28 +29,53 @@ _PROVIDER_METADATA = ProviderMetadata(issuer=_ISSUER_URL,
 PROVIDER_CONFIG = ProviderConfiguration(provider_metadata=_PROVIDER_METADATA,
                                         client_metadata=_CLIENT_METADATA)
 
+oidc_authenticator = OIDCAuthentication({'default': PROVIDER_CONFIG}, app)
 
-def revoke_token(fn):
+
+def authenticate_with_elixir():
+    """Authenticate with Elixir."""
+    session = UserSession(flask.session, "default")
+    pyoidc_fcd = oidc_authenticator.clients[session.current_provider]
+    if session.should_refresh(pyoidc_fcd.session_refresh_interval_seconds):
+        logging.debug('Refreshing user auth"')
+        return oidc_authenticator._authenticate(client=pyoidc_fcd, interactive=False)
+    elif session.is_authenticated():
+        logging.debug('User already authenticated')
+        return None
+    else:
+        logging.debug('User not authenticated')
+        return oidc_authenticator._authenticate(client=pyoidc_fcd)
+
+
+def logout_from_elixir():
+    """Sign out from Elixir."""
+    if 'state' in flask.request.args:
+        # returning redirect from provider
+        if flask.request.args['state'] != flask.session.pop('end_session_state'):
+            logging.error("Got unexpected state '%s' after logout redirect.", flask.request.args['state'])
+            return None
+
+    return oidc_authenticator._logout()
+
+
+def revoke_token():
     """Revoke Elixir auth token."""
-    @wraps(fn)
-    def wrapped(*args, **kwargs):
-        logging.debug('Revoking token...')
-        user_session = handle_uninitialised_session()
-        if user_session is None:
-            return fn(*args, **kwargs)
+    logging.debug('Revoking token...')
+    user_session = handle_uninitialised_session()
+    if user_session is None:
+        return None
+    else:
+        token_payload = {"token": user_session.access_token}
+        response = requests.get(_TOKEN_REVOCATION_URL,
+                                params=token_payload,
+                                auth=HTTPBasicAuth(config["ELIXIR_ID"],
+                                                   config["ELIXIR_SECRET"]))
+        if response.status_code == 200:
+            logging.info("Your token has been successfully revoked")
+            return True
         else:
-            token_payload = {"token": user_session.access_token}
-            response = requests.get(_TOKEN_REVOCATION_URL,
-                                    params=token_payload,
-                                    auth=HTTPBasicAuth(config["ELIXIR_ID"],
-                                                       config["ELIXIR_SECRET"]))
-            if response.status_code == 200:
-                logging.info("Your token has been successfully revoked")
-                return fn(*args, **kwargs)
-            else:
-                logging.warning(f'{response.status_code}: {response.content}')
-                return fn(*args, **kwargs)
-    return wrapped
+            logging.warning(f'{response.status_code}: {response.content}')
+            return None
 
 
 def handle_uninitialised_session():
@@ -60,3 +86,8 @@ def handle_uninitialised_session():
     except UninitialisedSession:
         logging.debug('The user was already logged out')
         return None
+
+
+def handle_auth_response():
+    """Handle auth response to get user info."""
+    return oidc_authenticator._handle_authentication_response()
