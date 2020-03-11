@@ -1,6 +1,10 @@
 import flask_login
-from settings import SERVICE_SETTINGS as config
 import jwt
+import logging
+from pathlib import Path
+from settings import SERVICE_SETTINGS as config
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 
 
 _JWT_PRIVATE_KEY = config['JWT_PRIVATE_KEY']
@@ -24,8 +28,25 @@ class EgaUser(flask_login.UserMixin):
         """Return user's jwt token."""
         return self.jwt_token
 
+    @staticmethod
+    def _load_jwt_private_key():
+        """Load jwt private key."""
+        try:
+            with open(Path(_JWT_PRIVATE_KEY)) as pem_data:
+                private_key_data = bytes(pem_data.read(), "utf-8")
+                serialized_private_key = serialization.load_pem_private_key(private_key_data,
+                                                                            backend=default_backend(),
+                                                                            password=None)
+                return serialized_private_key.private_bytes(encoding=serialization.Encoding.PEM,
+                                                            format=serialization.PrivateFormat.PKCS8,
+                                                            encryption_algorithm=serialization.NoEncryption())
+        except Exception as e:
+            logging.error(f'{_JWT_PRIVATE_KEY} could not be loaded')
+            logging.exception(e)
+            exit(1)
+
     def generate_jwt_token(self):
         """Generate a jwt token for a user."""
         jwt_entries = {"iss": _JWT_ISSUER,
                        "sub": self.ega_id}
-        return jwt.encode({**jwt_entries}, _JWT_PRIVATE_KEY).decode("utf-8")
+        return jwt.encode({**jwt_entries}, self._load_jwt_private_key()).decode("utf-8")
