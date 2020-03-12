@@ -28,6 +28,7 @@ SERVICE_SETTINGS = {"LOG_LEVEL": os.environ.get("LOG_LEVEL", yaml_settings.get("
                     "CEGA_ID": os.environ.get("CEGA_ID", yaml_settings.get("cega", {}).get("id", "dummy")),
                     "CEGA_SECRET": os.environ.get("CEGA_SECRET", yaml_settings.get("cega", {}).get("secret", "dummy")),
                     "JWT_PRIVATE_KEY": os.environ.get("JWT_PRIVATE_KEY", yaml_settings.get("cega", {}).get("jwtPrivateKey", "keys/sign-jwt.key")),
+                    "JWT_SIGNATURE_ALG": os.environ.get("JWT_SIGNATURE_ALG", yaml_settings.get("cega", {}).get("jwtSignatureAlg", "ES256")),
                     "BIND_ADDRESS": os.environ.get("BIND_ADDRESS", yaml_settings.get("bindAddress", "localhost")),
                     "PORT": int(os.environ.get("PORT", yaml_settings.get("port", 31111))),
                     "SERVER_NAME": os.environ.get("SERVER_NAME", yaml_settings.get("serverName", "localhost:31111")),
