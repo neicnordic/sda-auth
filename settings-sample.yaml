@@ -15,6 +15,7 @@ cega:
   id: "dummy"
   secret: "dummy"
   jwtPrivateKey: "keys/sign-jwt.key"
+  jwtSignatureAlg: "ES256"
 bindAddress: "localhost"
 port: 31111
 serverName: "localhost:31111"
