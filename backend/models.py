@@ -1,5 +1,5 @@
 import flask_login
-import jwt
+from jose import jwt
 import logging
 from pathlib import Path
 from settings import SERVICE_SETTINGS as config
@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives import serialization
 
 
 _JWT_PRIVATE_KEY = config['JWT_PRIVATE_KEY']
+_JWT_SIGNATURE_ALG = config['JWT_SIGNATURE_ALG']
 _JWT_ISSUER = config['SERVER_NAME']
 
 
@@ -32,14 +33,11 @@ class EgaUser(flask_login.UserMixin):
     def _load_jwt_private_key():
         """Load jwt private key."""
         try:
-            with open(Path(_JWT_PRIVATE_KEY)) as pem_data:
-                private_key_data = bytes(pem_data.read(), "utf-8")
-                serialized_private_key = serialization.load_pem_private_key(private_key_data,
-                                                                            backend=default_backend(),
-                                                                            password=None)
-                return serialized_private_key.private_bytes(encoding=serialization.Encoding.PEM,
-                                                            format=serialization.PrivateFormat.PKCS8,
-                                                            encryption_algorithm=serialization.NoEncryption())
+            with open(Path(_JWT_PRIVATE_KEY), 'rb') as pem_data:
+                private_key_data = pem_data.read()
+                return serialization.load_pem_private_key(private_key_data,
+                                                          backend=default_backend(),
+                                                          password=None)
         except Exception as e:
             logging.error(f'{_JWT_PRIVATE_KEY} could not be loaded')
             logging.exception(e)
@@ -49,4 +47,6 @@ class EgaUser(flask_login.UserMixin):
         """Generate a jwt token for a user."""
         jwt_entries = {"iss": _JWT_ISSUER,
                        "sub": self.ega_id}
-        return jwt.encode({**jwt_entries}, self._load_jwt_private_key()).decode("utf-8")
+        return jwt.encode({**jwt_entries},
+                          self._load_jwt_private_key(),
+                          algorithm=_JWT_SIGNATURE_ALG)
