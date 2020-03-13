@@ -22,8 +22,9 @@ Parameter | Description | Defined value
 `CEGA_AUTH_URL` | CEGA server endpoint | `http://localhost:8443/lega/v1/legas/users/`
 `CEGA_ID` | CEGA server authentication id | `dummy`
 `CEGA_SECRET` | CEGA server authentication secret | `dummy`
-`JWT_PRIVATE_KEY` | Private key for signing the JWT token | `de8b3fe55c7d9fb32de24b842847087`
-`BIND_ADDRESS` | Binding address for the web server container | `0.0.0.0`
+`JWT_PRIVATE_KEY` | Path to private key for signing the JWT token | `keys/sign-jwt.key`
+`JWT_SIGNATURE_ALG` | Algorithm used to sign the JWT token. ES (ECDSA) and RS (RSA) are common choices | `ES256`
+`BIND_ADDRESS` | Binding address for the web server container | `localhost`
 `PORT` | Port for the web server container | `31111`
 `SERVER_NAME` | Qualified endpoint for the web server | `localhost:31111`
 `URL_SCHEME` | URL scheme may be http or https | `http`
