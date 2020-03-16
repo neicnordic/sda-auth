@@ -19,6 +19,7 @@ Parameter | Description | Defined value
 `ELIXIR_USERINFO_URL` | Elixir user info endpoint | `http://localhost:9090/me`
 `ELIXIR_ISSUER_URL` | Elixir issuer URL | `http://localhost:9090`
 `ELIXIR_REVOCATION_URL` | Elixir token revocation endpoint | `http://localhost:9090`
+`ELIXIR_SCOPE` | Elixir OIDC scopes, separated by space. You may choose "openid" or "openid ga4gh_passport_v1" | `openid`
 `CEGA_AUTH_URL` | CEGA server endpoint | `http://localhost:8443/lega/v1/legas/users/`
 `CEGA_ID` | CEGA server authentication id | `dummy`
 `CEGA_SECRET` | CEGA server authentication secret | `dummy`
