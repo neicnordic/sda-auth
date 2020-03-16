@@ -10,7 +10,13 @@
         <p>
 
         <pre class="border border-secondary rounded py-2 px-3 my-4" style="user-select: all;">{{access_token}}</pre>
+        {% if visa %}
+        <p class="text-center">
+          Your visa is the following:
+        <p>
 
+        <pre class="border border-secondary rounded py-2 px-3 my-4" style="user-select: all;">{{visa}}</pre>
+        {% endif %}
         <a href="{{ url_for('index')}}" class="btn btn-primary btn-block">Continue</a>
         <a href="{{ url_for('elixir.logout')}}" class="btn btn-danger btn-block">Log out</a>
   </div>
