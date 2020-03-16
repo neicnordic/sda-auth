@@ -18,9 +18,9 @@ def info():
     """Display Elixir user info."""
     user_session = elixir_authenticator.handle_uninitialised_session()
     if user_session and user_session.is_authenticated():
-        print(user_session.userinfo)
         return render_template("elixir_login_success.html",
                                user_name=user_session.userinfo['sub'],
+                               visa=user_session.userinfo.get('visa', None),
                                access_token=user_session.access_token)
     else:
         return redirect(url_for("index"), 302)
