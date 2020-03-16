@@ -24,6 +24,7 @@ SERVICE_SETTINGS = {"LOG_LEVEL": os.environ.get("LOG_LEVEL", yaml_settings.get("
                     "ELIXIR_USERINFO_URL": os.environ.get("ELIXIR_USERINFO_URL", yaml_settings.get("elixir", {}).get("userInfo", "http://localhost:9090/me")),
                     "ELIXIR_ISSUER_URL": os.environ.get("ELIXIR_ISSUER_URL", yaml_settings.get("elixir", {}).get("issuer", "http://localhost:9090")),
                     "ELIXIR_REVOCATION_URL": os.environ.get("ELIXIR_REVOCATION_URL", yaml_settings.get("elixir", {}).get("revocationUrl", "http://localhost:9090")),
+                    "ELIXIR_SCOPE": os.environ.get("ELIXIR_SCOPE", yaml_settings.get("elixir", {}).get("scope", "openid")),
                     "CEGA_AUTH_URL": os.environ.get("CEGA_AUTH_URL", yaml_settings.get("cega", {}).get("authUrl", "http://localhost:8443/lega/v1/legas/users/")),
                     "CEGA_ID": os.environ.get("CEGA_ID", yaml_settings.get("cega", {}).get("id", "dummy")),
                     "CEGA_SECRET": os.environ.get("CEGA_SECRET", yaml_settings.get("cega", {}).get("secret", "dummy")),

@@ -10,6 +10,7 @@ elixir:
   userInfo: "http://localhost:9090/me"
   issuer: "http://localhost:9090"
   revocationUrl: "http://localhost:9090"
+  scope: "openid"
 cega:
   authUrl: "http://localhost:8443/lega/v1/legas/users/"
   id: "dummy"
