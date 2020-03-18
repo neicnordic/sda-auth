@@ -1,6 +1,5 @@
 flask>=1.1.1
 gevent>=1.4.0
-Flask-pyoidc>=3.2.0
 Flask-Login>=0.5.0 
 Flask-WTF>=0.14.3
 PyYAML>=5.3
@@ -9,3 +8,4 @@ bcrypt>=3.1.7
 tox==3.13.2
 python-jose>=3.1.0
 cryptography>=2.8
+oic>=1.2.0
