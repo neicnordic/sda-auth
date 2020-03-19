@@ -4,7 +4,7 @@ import flask
 from requests.auth import HTTPBasicAuth
 import logging
 from oic import rndstr
-from oic.oic import Client, RegistrationResponse, AuthorizationResponse, AuthorizationErrorResponse
+from oic.oic import Client, RegistrationResponse, AuthorizationResponse, AuthorizationErrorResponse, AccessTokenResponse
 from oic.oic.message import ProviderConfigurationResponse
 from oic.oic import Grant
 from oic.oic import Token
@@ -63,6 +63,7 @@ def send_authentication_request(state, nonce, extra_auth_params):
     args = {'response_type': 'code',
             'grant_type': 'authorization_code',
             'scope': _ELIXIR_SCOPE.split(),
+            'timeout': '10',
             'redirect_uri': _ELIXIR_REDIRECT_URL,
             'state': state,
             'nonce': nonce}
@@ -77,7 +78,7 @@ def send_authentication_request(state, nonce, extra_auth_params):
 
 
 def handle_authentication_response():
-    """Handle auth response to get user info."""
+    """Handle auth response."""
     auth_resp = flask.request.args
     logging.debug('received authentication response')
     authn_resp = parse_authentication_response(auth_resp)
@@ -86,7 +87,7 @@ def handle_authentication_response():
 
 
 def parse_authentication_response(response_params):
-    """Handle auth response."""
+    """Parse auth response."""
     if 'error' in response_params:
         response = AuthorizationErrorResponse(**response_params)
     else:
@@ -104,6 +105,7 @@ def send_token_request():
             "grant_type": 'authorization_code',
             "code": flask.session['code'],
             "scope": _ELIXIR_SCOPE.split()}
+    htargs = {'timeout': 10}
 
     grant = Grant()
     grant.code = flask.session['code']
@@ -113,32 +115,40 @@ def send_token_request():
     logging.debug('making token request: %s', args)
     return client.do_access_token_request(state=flask.session["state"],
                                           request_args=args,
+                                          http_args=htargs,
                                           authn_method="client_secret_basic")
 
 
 def handle_token_response(resp):
     """Handle token response."""
     logging.debug('handling token response: %s', resp.to_json())
-    #token_response = client.parse_response(AccessTokenResponse, info=json.dumps(resp.to_dict()))
+    parse_token_response(resp)
     flask.session['access_token'] = resp['access_token']
     return resp
 
 
+def parse_token_response(response_params):
+    """Parse token response."""
+    response = AccessTokenResponse(**response_params)
+    return response
+
+
 def send_userinfo_request(token_resp):
     """Send user info request."""
+    htargs = {'timeout': 10}
     grant = Grant()
     token = Token(token_resp)
     grant.tokens.append(token)
     client.grant[flask.session['state']] = grant
     grant.tokens.append(token)
-    userinfo = client.do_user_info_request(state=flask.session["state"])
+    userinfo = client.do_user_info_request(state=flask.session["state"],
+                                           http_args=htargs)
     return userinfo
 
 
 def handle_userinfo_response(resp):
     """Handle user info response."""
     logging.debug('handling userinfo response: %s', resp.to_json())
-    #userinfo_response = client.parse_response(AccessTokenResponse, info=json.dumps(resp.to_dict()))
     return resp
 
 
@@ -151,7 +161,7 @@ def revoke_token():
     """Revoke Elixir auth token."""
     logging.debug('Revoking token...')
     user_session = flask.session
-    if user_session is None:
+    if user_session.get("access_token", None) is None:
         return None
     else:
         token_payload = {"token": user_session['access_token']}
