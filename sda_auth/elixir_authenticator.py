@@ -4,10 +4,9 @@ import flask
 from requests.auth import HTTPBasicAuth
 import logging
 from oic import rndstr
+from oic.oic import Grant, Token
 from oic.oic import Client, RegistrationResponse, AuthorizationResponse, AuthorizationErrorResponse, AccessTokenResponse
 from oic.oic.message import ProviderConfigurationResponse
-from oic.oic import Grant
-from oic.oic import Token
 from oic.utils import time_util
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from werkzeug.utils import redirect
