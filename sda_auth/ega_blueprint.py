@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, url_for, redirect, flash
-import ega_authenticator
-import forms
+from ega_authenticator import EgaAuthenticator
+import sda_auth.forms as forms
 import logging
 
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
+ega_authenticator = EgaAuthenticator()
 
 
 def login():

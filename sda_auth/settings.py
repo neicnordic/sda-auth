@@ -1,15 +1,14 @@
-import os
 import yaml
-
+import os
+from pathlib import Path
+import logging
 
 SETTINGS_FILE = os.environ.get("CONF_FILE_PATH", "settings-sample.yaml")
 
 try:
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    yaml_settings_fh = open(os.path.join(current_dir, SETTINGS_FILE))
-except FileNotFoundError:
-    parent_dir = os.path.join(current_dir, os.pardir)
-    yaml_settings_fh = open(os.path.join(parent_dir, SETTINGS_FILE))
+    yaml_settings_fh = open(Path(SETTINGS_FILE))
+except FileNotFoundError as e:
+    logging.error(e)
 
 yaml_settings = yaml.safe_load(yaml_settings_fh)
 yaml_settings_fh.close()

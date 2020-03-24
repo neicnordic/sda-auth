@@ -1,10 +1,11 @@
-import elixir_authenticator
+from sda_auth.elixir_authenticator import ElixirAuthenticator
 import flask
 import logging
 from flask import Blueprint, render_template, redirect, url_for, jsonify
 
 
 elixir_bp = Blueprint("elixir", __name__, url_prefix="/elixir")
+elixir_authenticator = ElixirAuthenticator()
 
 
 def login():

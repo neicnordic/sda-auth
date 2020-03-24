@@ -2,7 +2,7 @@ import flask_login
 from jose import jwt
 import logging
 from pathlib import Path
-from settings import SERVICE_SETTINGS as config
+from sda_auth.settings import SERVICE_SETTINGS as config
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
