@@ -1,25 +1,25 @@
 ---
 logLevel: "DEBUG"
 elixir:
-  redirectUri: "http://localhost:31111/elixir/login"
+  redirectUri: "http://backend:31111/elixir/login"
   id: "XC56EL11xx"
   secret: "wHPVQaYXmdDHg"
-  authUrl: "http://localhost:9090/auth"
-  tokenUrl: "http://localhost:9090/token"
-  certsUrl: "http://localhost:9090/certs"
-  userInfo: "http://localhost:9090/me"
-  issuer: "http://localhost:9090"
-  revocationUrl: "http://localhost:9090"
-  scope: "openid"
+  authUrl: "http://oidc:9090/auth"
+  tokenUrl: "http://oidc:9090/token"
+  certsUrl: "http://oidc:9090/certs"
+  userInfo: "http://oidc:9090/me"
+  issuer: "http://oidc:9090"
+  revocationUrl: "http://oidc:9090"
+  scope: "openid ga4gh_passport_v1"
 cega:
-  authUrl: "http://localhost:8443/lega/v1/legas/users/"
+  authUrl: "http://cega:8443/lega/v1/legas/users/"
   id: "dummy"
   secret: "dummy"
   jwtPrivateKey: "keys/sign-jwt.key"
   jwtSignatureAlg: "ES256"
-bindAddress: "localhost"
+bindAddress: "0.0.0.0"
 port: 31111
-serverName: "localhost:31111"
+serverName: "backend:31111"
 urlScheme: "http"
 development: True
 # Generated with os.urandom(24).hex()
