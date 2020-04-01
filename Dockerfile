@@ -5,6 +5,6 @@ WORKDIR /sda-auth
 COPY . ./
 
 RUN apt update && \
-    pip3 install -r backend/requirements.txt
+    pip3 install -r requirements.txt
 
-CMD ["python3", "backend/route.py"]
+CMD ["python3", "sda_auth/route.py"]

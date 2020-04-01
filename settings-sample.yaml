@@ -1,7 +1,7 @@
 ---
 logLevel: "DEBUG"
 elixir:
-  redirectUri: "/elixir/login"
+  redirectUri: "http://localhost:31111/elixir/login"
   id: "XC56EL11xx"
   secret: "wHPVQaYXmdDHg"
   authUrl: "http://localhost:9090/auth"
@@ -10,6 +10,7 @@ elixir:
   userInfo: "http://localhost:9090/me"
   issuer: "http://localhost:9090"
   revocationUrl: "http://localhost:9090"
+  scope: "openid"
 cega:
   authUrl: "http://localhost:8443/lega/v1/legas/users/"
   id: "dummy"

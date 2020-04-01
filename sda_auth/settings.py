@@ -1,21 +1,20 @@
-import os
 import yaml
-
+import os
+from pathlib import Path
+import logging
 
 SETTINGS_FILE = os.environ.get("CONF_FILE_PATH", "settings-sample.yaml")
 
 try:
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    yaml_settings_fh = open(os.path.join(current_dir, SETTINGS_FILE))
-except FileNotFoundError:
-    parent_dir = os.path.join(current_dir, os.pardir)
-    yaml_settings_fh = open(os.path.join(parent_dir, SETTINGS_FILE))
+    yaml_settings_fh = open(Path(SETTINGS_FILE))
+except FileNotFoundError as e:
+    logging.error(e)
 
 yaml_settings = yaml.safe_load(yaml_settings_fh)
 yaml_settings_fh.close()
 
 SERVICE_SETTINGS = {"LOG_LEVEL": os.environ.get("LOG_LEVEL", yaml_settings.get("logLevel", "DEBUG")),
-                    "ELIXIR_REDIRECT_URI": os.environ.get("ELIXIR_REDIRECT_URI", yaml_settings.get("elixir", {}).get("redirectUri", "/elixir/login")),
+                    "ELIXIR_REDIRECT_URI": os.environ.get("ELIXIR_REDIRECT_URI", yaml_settings.get("elixir", {}).get("redirectUri", "http://localhost:31111/elixir/login")),
                     "ELIXIR_ID": os.environ.get("ELIXIR_ID", yaml_settings.get("elixir", {}).get("id", "XC56EL11xx")),
                     "ELIXIR_SECRET": os.environ.get("ELIXIR_SECRET", yaml_settings.get("elixir", {}).get("secret", "wHPVQaYXmdDHg")),
                     "ELIXIR_AUTH_URL": os.environ.get("ELIXIR_AUTH_URL", yaml_settings.get("elixir", {}).get("authUrl", "http://localhost:9090/auth")),
@@ -25,6 +24,7 @@ SERVICE_SETTINGS = {"LOG_LEVEL": os.environ.get("LOG_LEVEL", yaml_settings.get("
                     "ELIXIR_ISSUER_URL": os.environ.get("ELIXIR_ISSUER_URL", yaml_settings.get("elixir", {}).get("issuer", "http://localhost:9090")),
                     "ELIXIR_REVOCATION_URL": os.environ.get("ELIXIR_REVOCATION_URL", yaml_settings.get("elixir", {}).get("revocationUrl", "http://localhost:9090")),
                     "CEGA_AUTH_URL": os.environ.get("CEGA_AUTH_URL", yaml_settings.get("cega", {}).get("authUrl", "http://localhost:8443/lega/v1/legas/users/")),
+                    "ELIXIR_SCOPE": os.environ.get("ELIXIR_SCOPE", yaml_settings.get("elixir", {}).get("scope", "openid")),
                     "CEGA_ID": os.environ.get("CEGA_ID", yaml_settings.get("cega", {}).get("id", "dummy")),
                     "CEGA_SECRET": os.environ.get("CEGA_SECRET", yaml_settings.get("cega", {}).get("secret", "dummy")),
                     "JWT_PRIVATE_KEY": os.environ.get("JWT_PRIVATE_KEY", yaml_settings.get("cega", {}).get("jwtPrivateKey", "keys/sign-jwt.key")),

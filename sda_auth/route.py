@@ -3,15 +3,15 @@ monkey.patch_all() # noqa
 
 import logging
 import datetime
-import elixir_blueprint
-import ega_blueprint
+import sda_auth.elixir_blueprint as elixir_blueprint
+import sda_auth.ega_blueprint as ega_blueprint
 from gevent.pywsgi import WSGIServer
 from flask import (
     Flask, render_template
 )
 from flask_login import LoginManager
-from settings import SERVICE_SETTINGS as config
-from models import EgaUser
+from sda_auth.settings import SERVICE_SETTINGS as config
+from sda_auth.models import EgaUser
 
 
 logging.basicConfig(level=config["LOG_LEVEL"])

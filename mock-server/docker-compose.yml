@@ -22,6 +22,4 @@ services:
       - CEGA_USERS_USER=dummy
     ports:
       - 8443:8443
-  
-
 
