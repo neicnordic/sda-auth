@@ -36,17 +36,10 @@ Parameter | Description | Defined value
 
 ## Running the development setup
 
-Start the mock services located under the mock-server folder:
+Start the full stack  bu running docker-compose in the dev-server folder:
 
 ```bash
-docker-compose up -d --force-recreate
-```
-
-And to start the backend, you may run:
-
-```bash
-pip3 install -r requirements.txt
-python3 backend/route.py
+docker-compose up -d --force-recreate --build
 ```
 
 ## Building a Docker container

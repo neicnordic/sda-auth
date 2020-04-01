@@ -9,10 +9,9 @@ __pycache__/
 .vscode
 
 # deployment
-mock_server/
+dev-server/
 deployment/
 Dockerfile
-Dockerfile-prod
 
 # Distribution / packaging
 .Python
