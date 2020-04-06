@@ -1,4 +1,6 @@
 import flask_login
+from datetime import datetime
+from datetime import timedelta
 from jose import jwt
 import logging
 from pathlib import Path
@@ -45,8 +47,11 @@ class EgaUser(flask_login.UserMixin):
 
     def generate_jwt_token(self):
         """Generate a jwt token for a user."""
+        expiration_time = datetime.now() + timedelta(days=7)
         jwt_entries = {"iss": _JWT_ISSUER,
-                       "sub": self.ega_id}
+                       "sub": self.ega_id,
+                       "exp": expiration_time}
+
         return jwt.encode({**jwt_entries},
                           self._load_jwt_private_key(),
                           algorithm=_JWT_SIGNATURE_ALG)
