@@ -1,10 +1,10 @@
 ---
 logLevel: "DEBUG"
 elixir:
-  redirectUri: "http://backend:31111/elixir/login"
+  redirectUri: "http://localhost:31111/elixir/login"
   id: "XC56EL11xx"
   secret: "wHPVQaYXmdDHg"
-  authUrl: "http://oidc:9090/auth"
+  authUrl: "http://localhost:9090/auth"
   tokenUrl: "http://oidc:9090/token"
   certsUrl: "http://oidc:9090/certs"
   userInfo: "http://oidc:9090/me"
@@ -19,7 +19,7 @@ cega:
   jwtSignatureAlg: "ES256"
 bindAddress: "0.0.0.0"
 port: 31111
-serverName: "backend:31111"
+serverName: "localhost:31111"
 urlScheme: "http"
 development: True
 # Generated with os.urandom(24).hex()

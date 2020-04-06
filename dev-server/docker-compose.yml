@@ -1,6 +1,7 @@
 version: '3.7'
 services:
   oidc:
+    container_name: oidc
     build:
       context: ./oidc
       dockerfile: Dockerfile
@@ -9,10 +10,11 @@ services:
       - PORT=9090
       - CLIENT_ID=XC56EL11xx
       - CLIENT_SECRET=wHPVQaYXmdDHg
-      - CLIENT_REDIRECT_URI=http://backend:31111/elixir/login
+      - CLIENT_REDIRECT_URI=http://localhost:31111/elixir/login
     ports:
       - 9090:9090
   cega:
+    container_name: cega
     image: egarchive/lega-base:release.v0.2.0
     volumes:
       - ./cega-users:/cega
@@ -23,10 +25,14 @@ services:
       - CEGA_USERS_USER=dummy
     ports:
       - 8443:8443
-  backend:
+  auth:
+    container_name: auth
     build:
       context: ../
       dockerfile: Dockerfile
+    environment:
+      - LOG_LEVEL=DEBUG
+      - CONF_FILE_PATH=/sda-auth/settings-sample.yaml
     volumes:
       - ../keys:/keys
       - ../:/sda-auth
