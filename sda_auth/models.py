@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives import serialization
 _PROTOCOL = "https://" if config["ENABLE_TLS"] else "http://"
 _JWT_PRIVATE_KEY = config['JWT_PRIVATE_KEY']
 _JWT_SIGNATURE_ALG = config['JWT_SIGNATURE_ALG']
-_JWT_ISSUER =  _PROTOCOL + config['SERVER_NAME']
+_JWT_ISSUER = _PROTOCOL + config['SERVER_NAME']
 
 
 class EgaUser(flask_login.UserMixin):
