@@ -50,14 +50,15 @@ def start_app(flask_app):
     flask_app.register_blueprint(ega_blueprint.ega_bp)
 
 
-def verify_exist(files):
+def files_exist(files):
     """Check if the given files exist."""
     for f in files:
         if Path(f).is_file():
             continue
         else:
             logging.error(f'{f} does not exist')
-            exit(1)
+            return False
+    return True
 
 
 def main():
@@ -67,24 +68,22 @@ def main():
     logging.debug(f'TLS flag is {config["ENABLE_TLS"]}')
 
     # Create gevent WSGI server
-    if config["ENABLE_TLS"] and config["CA_CERTS"] is not None:
-        verify_exist([config["CERT_FILE"], config["KEY_FILE"], config["CA_CERTS"]])
-        wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                                 app.wsgi_app,
-                                 certfile=config["CERT_FILE"],
-                                 keyfile=config["KEY_FILE"],
-                                 ca_certs=config["CA_CERTS"])
+    wsgi_tls_params = dict()
 
-    elif config["ENABLE_TLS"] and config["CA_CERTS"] is None:
-        verify_exist([config["CERT_FILE"], config["KEY_FILE"]])
-        wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                                 app.wsgi_app,
-                                 certfile=config["CERT_FILE"],
-                                 keyfile=config["KEY_FILE"])
+    if config["ENABLE_TLS"]:
+        wsgi_tls_params = {"certfile": config["CERT_FILE"],
+                           "keyfile": config["KEY_FILE"]}
 
-    else:
-        wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                                 app.wsgi_app)
+    if config["CA_CERTS"] is not None:
+        wsgi_tls_params["ca_certs"] = config["CA_CERTS"]
+
+    if not files_exist(wsgi_tls_params.values()):
+        logging.debug("Bad configuration. Exiting...")
+        exit(1)
+
+    wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
+                             app.wsgi_app,
+                             **wsgi_tls_params)
 
     # Start gevent WSGI server
     wsgi_server.serve_forever()
