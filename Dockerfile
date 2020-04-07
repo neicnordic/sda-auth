@@ -1,11 +1,13 @@
-FROM python:3.7.6-slim-stretch
+FROM python:3.7-alpine
 
 WORKDIR /sda-auth
 
 COPY . ./
 
-RUN apt update && \
-    pip3 install -r requirements.txt && \
-    python3 setup.py install
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev && \
+    pip install -r requirements.txt && \
+    python setup.py install && \
+    apk del gcc musl-dev libffi-dev openssl-dev && \
+    rm -rf /root/.cache
 
-CMD ["python3", "sda_auth/route.py"]
+CMD ["python", "sda_auth/route.py"]
