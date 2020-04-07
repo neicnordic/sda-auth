@@ -107,15 +107,13 @@ class ElixirAuthenticator:
         """Send token request."""
         args = {"response_type": 'access_token',
                 "grant_type": 'authorization_code',
-                "code": flask.session['code'],
                 "scope": _ELIXIR_SCOPE.split()}
         htargs = {'timeout': 10}
 
         grant = Grant()
-        grant.code = flask.session['code']
+        grant.code = flask.session.pop("code")
         grant.grant_expiration_time = time_util.utc_time_sans_frac() + 30
         self.client.grant = {flask.session['state']: grant}
-        logging.debug(flask.session.get("code"))
         logging.debug('making token request: %s', args)
         return self.client.do_access_token_request(state=flask.session["state"],
                                                    request_args=args,

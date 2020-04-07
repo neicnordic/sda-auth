@@ -22,7 +22,13 @@ def login():
         elixir_authenticator.handle_authentication_response()
         tok_req = elixir_authenticator.send_token_request()
         logging.debug("Access token resp")
-        token_resp = elixir_authenticator.handle_token_response(tok_req)
+
+        try:
+            token_resp = elixir_authenticator.handle_token_response(tok_req)
+        except Exception as e:
+            logging.error(e)
+            return redirect(url_for("index"))
+
         userinfo_req = elixir_authenticator.send_userinfo_request(token_resp)
         logging.debug("User info token resp")
         userinfo = elixir_authenticator.handle_userinfo_response(userinfo_req)
