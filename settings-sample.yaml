@@ -21,10 +21,10 @@ bindAddress: "0.0.0.0"
 port: 31111
 serverName: "backend:31111"
 urlScheme: "http"
-development: True
 # Generated with os.urandom(24).hex()
 secretKey: "de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff"
 tls:
-  certFile: "authsvc.ca.crt"
-  keyFile: "authsvc.ca.key"
-  caCerts: "authsvc.ca.crt"
+  enableTLS: "False"
+  certFile: "keys/authsvc.crt"
+  keyFile: "keys/authsvc.key"
+  #caCerts: "keys/ca.crt"

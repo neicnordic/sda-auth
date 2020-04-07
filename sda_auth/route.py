@@ -2,6 +2,7 @@ from gevent import monkey
 monkey.patch_all() # noqa
 
 import logging
+from pathlib import Path
 import datetime
 import sda_auth.elixir_blueprint as elixir_blueprint
 import sda_auth.ega_blueprint as ega_blueprint
@@ -49,13 +50,41 @@ def start_app(flask_app):
     flask_app.register_blueprint(ega_blueprint.ega_bp)
 
 
+def files_exist(files):
+    """Check if the given files exist."""
+    for f in files:
+        if Path(f).is_file():
+            continue
+        else:
+            logging.error(f'{f} does not exist')
+            return False
+    return True
+
+
 def main():
     """Start the wsgi serving the application."""
     start_app(app)
     logging.debug(">>>>> Starting authentication server at {}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
+    logging.debug(f'TLS flag is {config["ENABLE_TLS"]}')
+
     # Create gevent WSGI server
+    wsgi_tls_params = dict()
+
+    if config["ENABLE_TLS"]:
+        wsgi_tls_params = {"certfile": config["CERT_FILE"],
+                           "keyfile": config["KEY_FILE"]}
+
+        if config["CA_CERTS"] is not None:
+            wsgi_tls_params["ca_certs"] = config["CA_CERTS"]
+
+        if not files_exist(wsgi_tls_params.values()):
+            logging.debug("Bad configuration. Exiting...")
+            exit(1)
+
     wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
-                             app.wsgi_app)
+                             app.wsgi_app,
+                             **wsgi_tls_params)
+
     # Start gevent WSGI server
     wsgi_server.serve_forever()
 

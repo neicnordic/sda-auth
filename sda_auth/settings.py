@@ -34,6 +34,7 @@ SERVICE_SETTINGS = {"LOG_LEVEL": os.environ.get("LOG_LEVEL", yaml_settings.get("
                     "SERVER_NAME": os.environ.get("SERVER_NAME", yaml_settings.get("serverName", "localhost:31111")),
                     "URL_SCHEME": os.environ.get("URL_SCHEME", yaml_settings.get("urlScheme", "http")),
                     "SECRET_KEY": os.environ.get("SECRET_KEY", yaml_settings.get("secretKey", "de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff")),
-                    "CERT_FILE": os.environ.get("CERT_FILE", yaml_settings.get("tls", {}).get("certFile", "")),
-                    "KEY_FILE": os.environ.get("KEY_FILE", yaml_settings.get("tls", {}).get("keyFile", "")),
-                    "CA_CERTS": os.environ.get("CA_CERTS", yaml_settings.get("tls", {}).get("caCerts", ""))}
+                    "ENABLE_TLS": eval(os.environ.get("ENABLE_TLS", yaml_settings.get("tls", {}).get("enableTLS", "False"))),
+                    "CERT_FILE": os.environ.get("CERT_FILE", yaml_settings.get("tls", {}).get("certFile", None)),
+                    "KEY_FILE": os.environ.get("KEY_FILE", yaml_settings.get("tls", {}).get("keyFile", None)),
+                    "CA_CERTS": os.environ.get("CA_CERTS", yaml_settings.get("tls", {}).get("caCerts", None))}

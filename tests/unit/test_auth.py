@@ -1,7 +1,5 @@
 import unittest
-import hashlib
 import requests
-from sda_auth.settings import SERVICE_SETTINGS as config
 from bs4 import BeautifulSoup
 
 
