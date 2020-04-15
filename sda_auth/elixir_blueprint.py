@@ -15,7 +15,7 @@ def login():
     logging.debug("Request coming")
     logging.debug(req)
     if 'error' in req:
-        logging.debug("Response contains error")
+        logging.info("User could not be authenticatedi with Elixir due to an error")
         return jsonify({"status": "Error"}), 401
     elif 'code' in req and state is not None:
         logging.debug("Code resp")
@@ -33,9 +33,12 @@ def login():
         logging.debug("User info token resp")
         userinfo = elixir_authenticator.handle_userinfo_response(userinfo_req)
         logging.debug(userinfo)
+        elixir_id = userinfo['sub']
+        access_token = token_resp['access_token']
+        logging.info(f'{elixir_id} has been successfully logged in with Elixir and granted the token {access_token}')
         return render_template("elixir_login_success.html",
-                               user_name=userinfo['sub'],
-                               access_token=token_resp['access_token'],
+                               user_name=elixir_id,
+                               access_token=access_token,
                                passport=userinfo.get('ga4gh_passport_v1', None))
     else:
         logging.debug("Authenticating request...")

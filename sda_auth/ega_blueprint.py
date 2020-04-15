@@ -14,13 +14,13 @@ def login():
     else:
         form = forms.EgaLoginForm()
         if form.validate_on_submit():
-            logging.info("Login form was successfullly validated")
+            logging.debug("Login form was successfullly validated")
             if ega_authenticator.authenticate_with_ega(username=form.username.data, password=form.password.data):
                 return redirect(url_for("ega.info"), 302)
             else:
                 flash('Wrong username or password.')
         else:
-            logging.info("Login form was not validated")
+            logging.debug("Login form was not validated")
     return render_template('ega_login_form.html', title='EGA login', form=form)
 
 

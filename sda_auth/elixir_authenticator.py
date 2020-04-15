@@ -160,17 +160,17 @@ class ElixirAuthenticator:
     def revoke_token():
         """Revoke Elixir auth token."""
         logging.debug('Revoking token...')
-        user_session = flask.session
-        if user_session.get("access_token", None) is None:
+        access_token = flask.session.get("access_token", None)
+        if access_token is None:
             return None
         else:
-            token_payload = {"token": user_session['access_token']}
+            token_payload = {"token": access_token}
             response = requests.get(_TOKEN_REVOCATION_URL,
                                     params=token_payload,
                                     auth=HTTPBasicAuth(config["ELIXIR_ID"],
                                                        config["ELIXIR_SECRET"]))
             if response.status_code == 200:
-                logging.info("Your token has been successfully revoked")
+                logging.info(f'The Elixir token {access_token} has been successfully revoked')
                 return True
             else:
                 logging.warning(f'{response.status_code}: {response.content}')

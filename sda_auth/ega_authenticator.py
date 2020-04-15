@@ -39,21 +39,21 @@ class EgaAuthenticator:
 
             if password_is_correct:
                 flask_login.login_user(ega_user)
-                logging.info("You have been successfully logged in with EGA")
+                logging.info(f'{username} has been successfully logged in with EGA')
                 return True
             else:
-                logging.warning("Password hashes did not match")
+                logging.info(f'{username} could not be authenticated with EGA due to invalid credentials')
                 return None
 
         else:
-            logging.warning(f'{response.status_code}: {response.content}')
+            logging.info(f'{username} could not be authenticatedi with EGA due to this response: {response.status_code}: {response.content}')
             return None
 
     @staticmethod
     def logout_from_ega():
         """Sign out from EGA."""
         flask_login.logout_user()
-        logging.info("You have been successfully logged out from EGA")
+        logging.debug("You have been successfully logged out from EGA")
         return redirect(url_for("index"), 302)
 
     @staticmethod
