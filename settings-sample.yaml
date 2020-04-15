@@ -1,5 +1,5 @@
 ---
-logLevel: "DEBUG"
+logLevel: "INFO"
 elixir:
   redirectUri: "http://backend:31111/elixir/login"
   id: "XC56EL11xx"
