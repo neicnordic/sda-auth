@@ -4,7 +4,7 @@ WORKDIR /sda-auth
 
 COPY . ./
 
-RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev && \
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev file make && \
     pip install -r requirements.txt && \
     python setup.py install && \
     apk del gcc musl-dev libffi-dev openssl-dev && \
