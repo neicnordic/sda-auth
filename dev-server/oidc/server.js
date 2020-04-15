@@ -3,6 +3,7 @@ const camelCase = require('camelcase');
 const Provider = require('oidc-provider');
 
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || "oidc" ;
 
 const config = ['CLIENT_ID', 'CLIENT_SECRET', 'CLIENT_REDIRECT_URI'].reduce((acc, v) => {
   assert(process.env[v], `${v} config missing`);
@@ -49,7 +50,7 @@ const oidcConfig = {
 
 };
 
-const oidc = new Provider(`http://oidc:${port}`, oidcConfig);
+const oidc = new Provider(`http://${host}:${port}`, oidcConfig);
 
 const clients= [{
     client_id: config.clientId,
@@ -62,7 +63,7 @@ let server;
 await oidc.initialize({ clients });
   server = oidc.listen(port, () => {
     console.log(
-      `mock-oidc-user-server listening on port ${port}, check http://oidc:${port}/.well-known/openid-configuration`
+      `mock-oidc-user-server listening on port ${port}, check http://${host}:${port}/.well-known/openid-configuration`
     );
   });
 })().catch(err => {

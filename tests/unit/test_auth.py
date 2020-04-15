@@ -9,7 +9,7 @@ class TestElixirAuth(unittest.TestCase):
 
     def setUp(self):
         """Initialise authenticator."""
-        self.backend_url = "http://backend:31111/elixir/login"
+        self.backend_url = "http://localhost:31111/elixir/login"
 
 
     def tearDown(self):
@@ -44,7 +44,7 @@ class TestElixirAuth(unittest.TestCase):
         self.assertEqual(grant_response.status_code, 302)
         self.assertIsNotNone(grant_id)
 
-        oidc_url = f'http://oidc:9090{location}/submit'
+        oidc_url = f'http://localhost:9090{location}/submit'
         cookies = {"_grant": grant_id}
         creds_payload = {"view":'login',
                          "login":'dummy',
@@ -67,8 +67,8 @@ class TestEGAAuth(unittest.TestCase):
 
     def setUp(self):
         """Initialise authenticator."""
-        self.backend_url = "http://backend:31111/ega/login"
-        self.user_info_url = "http://backend:31111/ega/info"
+        self.backend_url = "http://localhost:31111/ega/login"
+        self.user_info_url = "http://localhost:31111/ega/info"
 
 
     def tearDown(self):

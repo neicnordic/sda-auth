@@ -22,8 +22,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions
-    - name: Update hosts file
-      run: sudo echo -e "127.0.0.1 oidc\n127.0.0.1 backend" | sudo tee -a /etc/hosts
     - name: Start virtual infrastructure
       run: docker-compose -f ./dev-server/docker-compose.yml up -d --force-recreate --build
     - name: Run unit tests
