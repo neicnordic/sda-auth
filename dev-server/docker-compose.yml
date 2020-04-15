@@ -8,6 +8,7 @@ services:
     image: mock-oidc-user-server
     environment:
       - PORT=9090
+      - HOST=oidc
       - CLIENT_ID=XC56EL11xx
       - CLIENT_SECRET=wHPVQaYXmdDHg
       - CLIENT_REDIRECT_URI=http://localhost:31111/elixir/login
