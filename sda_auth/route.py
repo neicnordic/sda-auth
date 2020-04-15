@@ -14,8 +14,8 @@ from flask_login import LoginManager
 from sda_auth.settings import SERVICE_SETTINGS as config
 from sda_auth.models import EgaUser
 
-
-logging.basicConfig(level=config["LOG_LEVEL"])
+FORMAT = '[%(asctime)s] %(message)s'
+logging.basicConfig(format=FORMAT, level=config["LOG_LEVEL"])
 
 app = Flask(__name__, template_folder="../frontend/templates", static_folder="../frontend/static")
 
@@ -24,8 +24,7 @@ app.config.update({'SERVER_NAME': config['SERVER_NAME'],
                    'SECRET_KEY': config['SECRET_KEY'],
                    'PERMANENT_SESSION_LIFETIME': datetime.timedelta(seconds=60),
                    'PREFERRED_URL_SCHEME': config['URL_SCHEME'],
-                   "SESSION_PERMANENT": True,
-                   'DEBUG': True})
+                   "SESSION_PERMANENT": True})
 
 # Setup EGA Authenticator
 ega_login_manager = LoginManager()
