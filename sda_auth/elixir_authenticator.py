@@ -21,6 +21,9 @@ _TOKEN_REVOCATION_URL = config['ELIXIR_REVOCATION_URL']
 _ELIXIR_REDIRECT_URL = config['ELIXIR_REDIRECT_URI']
 _ELIXIR_SCOPE = config['ELIXIR_SCOPE']
 
+LOG = logging.getLogger("elixir")
+LOG.propagate = False
+
 
 class ElixirAuthenticator:
     """Elixir authentication handler."""
@@ -75,20 +78,19 @@ class ElixirAuthenticator:
                 'state': state,
                 'nonce': nonce}
 
-        logging.debug(f'{_ELIXIR_REDIRECT_URL} is the redir')
+        LOG.debug('%s is the redirect URL', _ELIXIR_REDIRECT_URL)
         args.update(extra_auth_params)
         auth_request = self.client.construct_AuthorizationRequest(request_args=args,
                                                                   authn_method="client_secret_basic")
 
-        logging.debug('Sending authentication request: %s', auth_request.to_json())
+        LOG.debug('Sending authentication request: %s', auth_request.to_json())
         return auth_request.request(_AUTHORISATION_URL)
 
     def handle_authentication_response(self):
         """Handle auth response."""
         auth_resp = flask.request.args
-        logging.debug('received authentication response')
         authn_resp = self.parse_authentication_response(auth_resp)
-        logging.debug('handling authentication response: %s', authn_resp.to_json())
+        LOG.debug('handling authentication response: %s', authn_resp.to_json())
         flask.session['code'] = authn_resp['code']
 
     def parse_authentication_response(self, response_params):
@@ -97,7 +99,7 @@ class ElixirAuthenticator:
             response = AuthorizationErrorResponse(**response_params)
         else:
             response = AuthorizationResponse(**response_params)
-            logging.debug("Verifying key jar")
+            LOG.debug("Verifying key jar")
             response.verify(keyjar=self.client.keyjar)
 
         assert flask.session['state'] == response['state']
@@ -114,7 +116,7 @@ class ElixirAuthenticator:
         grant.code = flask.session.pop("code")
         grant.grant_expiration_time = time_util.utc_time_sans_frac() + 30
         self.client.grant = {flask.session['state']: grant}
-        logging.debug('making token request: %s', args)
+        LOG.debug('making token request: %s', args)
         return self.client.do_access_token_request(state=flask.session["state"],
                                                    request_args=args,
                                                    http_args=htargs,
@@ -122,7 +124,7 @@ class ElixirAuthenticator:
 
     def handle_token_response(self, resp):
         """Handle token response."""
-        logging.debug('handling token response: %s', resp.to_json())
+        LOG.debug('handling token response: %s', resp.to_json())
         self.parse_token_response(resp)
         flask.session['access_token'] = resp['access_token']
         return resp
@@ -148,7 +150,7 @@ class ElixirAuthenticator:
     @staticmethod
     def handle_userinfo_response(resp):
         """Handle user info response."""
-        logging.debug('handling userinfo response: %s', resp.to_json())
+        LOG.debug('handling userinfo response: %s', resp.to_json())
         return resp
 
     @staticmethod
@@ -159,19 +161,19 @@ class ElixirAuthenticator:
     @staticmethod
     def revoke_token():
         """Revoke Elixir auth token."""
-        logging.debug('Revoking token...')
-        user_session = flask.session
-        if user_session.get("access_token", None) is None:
+        LOG.debug('Revoking token...')
+        access_token = flask.session.get("access_token", None)
+        if access_token is None:
             return None
         else:
-            token_payload = {"token": user_session['access_token']}
+            token_payload = {"token": access_token}
             response = requests.get(_TOKEN_REVOCATION_URL,
                                     params=token_payload,
                                     auth=HTTPBasicAuth(config["ELIXIR_ID"],
                                                        config["ELIXIR_SECRET"]))
             if response.status_code == 200:
-                logging.info("Your token has been successfully revoked")
+                LOG.info('The token %s has been successfully revoked', access_token)
                 return True
             else:
-                logging.warning(f'{response.status_code}: {response.content}')
+                LOG.warning('Token was not revoked due to: %s : %s', response.status_code, response.content)
                 return None

@@ -3,12 +3,16 @@ import os
 from pathlib import Path
 import logging
 
+
+LOG = logging.getLogger("default")
+LOG.propagate = False
+
 SETTINGS_FILE = os.environ.get("CONF_FILE_PATH", "settings-sample.yaml")
 
 try:
     yaml_settings_fh = open(Path(SETTINGS_FILE))
 except FileNotFoundError as e:
-    logging.error(e)
+    LOG.error(e)
 
 yaml_settings = yaml.safe_load(yaml_settings_fh)
 yaml_settings_fh.close()
