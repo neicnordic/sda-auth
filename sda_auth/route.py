@@ -13,9 +13,8 @@ from flask import (
 from flask_login import LoginManager
 from sda_auth.settings import SERVICE_SETTINGS as config
 from sda_auth.models import EgaUser
+from sda_auth.utils.loggers import setup_custom_loggers
 
-FORMAT = '[%(asctime)s] %(message)s'
-logging.basicConfig(format=FORMAT, level=config["LOG_LEVEL"])
 
 app = Flask(__name__, template_folder="../frontend/templates", static_folder="../frontend/static")
 
@@ -25,6 +24,11 @@ app.config.update({'SERVER_NAME': config['SERVER_NAME'],
                    'PERMANENT_SESSION_LIFETIME': datetime.timedelta(seconds=60),
                    'PREFERRED_URL_SCHEME': config['URL_SCHEME'],
                    "SESSION_PERMANENT": True})
+
+setup_custom_loggers(config["LOG_LEVEL"])
+LOG = logging.getLogger("default")
+LOG.propagate = False
+
 
 # Setup EGA Authenticator
 ega_login_manager = LoginManager()
@@ -55,7 +59,7 @@ def files_exist(files):
         if Path(f).is_file():
             continue
         else:
-            logging.error(f'{f} does not exist')
+            LOG.error('%s does not exist', f)
             return False
     return True
 
@@ -63,8 +67,8 @@ def files_exist(files):
 def main():
     """Start the wsgi serving the application."""
     start_app(app)
-    logging.debug(">>>>> Starting authentication server at {}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
-    logging.debug(f'TLS flag is {config["ENABLE_TLS"]}')
+    LOG.debug(">>>>> Starting authentication server at {}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
+    LOG.debug('TLS flag is %s', config["ENABLE_TLS"])
 
     # Create gevent WSGI server
     wsgi_tls_params = dict()
@@ -77,7 +81,7 @@ def main():
             wsgi_tls_params["ca_certs"] = config["CA_CERTS"]
 
         if not files_exist(wsgi_tls_params.values()):
-            logging.debug("Bad configuration. Exiting...")
+            LOG.debug("Bad configuration. Exiting...")
             exit(1)
 
     wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
