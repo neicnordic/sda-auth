@@ -20,10 +20,8 @@ def login():
         LOG.info("User could not be authenticated due to: %s", req["error"])
         return jsonify({"status": "Error"}), 401
     elif 'code' in req and state is not None:
-        LOG.debug("Code resp")
         elixir_authenticator.handle_authentication_response()
         tok_req = elixir_authenticator.send_token_request()
-        LOG.debug("Access token resp")
 
         try:
             token_resp = elixir_authenticator.handle_token_response(tok_req)
@@ -32,7 +30,6 @@ def login():
             return redirect(url_for("index"))
 
         userinfo_req = elixir_authenticator.send_userinfo_request(token_resp)
-        LOG.debug("User info token resp")
         userinfo = elixir_authenticator.handle_userinfo_response(userinfo_req)
         LOG.debug(userinfo)
         elixir_id = userinfo['sub']

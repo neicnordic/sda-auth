@@ -89,7 +89,6 @@ class ElixirAuthenticator:
     def handle_authentication_response(self):
         """Handle auth response."""
         auth_resp = flask.request.args
-        LOG.debug('received authentication response')
         authn_resp = self.parse_authentication_response(auth_resp)
         LOG.debug('handling authentication response: %s', authn_resp.to_json())
         flask.session['code'] = authn_resp['code']

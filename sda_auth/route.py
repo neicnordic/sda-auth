@@ -81,7 +81,7 @@ def main():
             wsgi_tls_params["ca_certs"] = config["CA_CERTS"]
 
         if not files_exist(wsgi_tls_params.values()):
-            LOG.debug("Bad configuration. Exiting...")
+            LOG.error("Bad configuration. Exiting...")
             exit(1)
 
     wsgi_server = WSGIServer((config["BIND_ADDRESS"], config["PORT"]),
