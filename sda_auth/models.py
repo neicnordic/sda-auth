@@ -13,6 +13,9 @@ _JWT_PRIVATE_KEY = config['JWT_PRIVATE_KEY']
 _JWT_SIGNATURE_ALG = config['JWT_SIGNATURE_ALG']
 _JWT_ISSUER = _PROTOCOL + config['SERVER_NAME']
 
+LOG = logging.getLogger("ega")
+LOG.propagate = False
+
 
 class EgaUser(flask_login.UserMixin):
     """An EGA user."""
@@ -41,7 +44,7 @@ class EgaUser(flask_login.UserMixin):
                                                           backend=default_backend(),
                                                           password=None)
         except Exception as e:
-            logging.error(f'{_JWT_PRIVATE_KEY} could not be loaded')
+            LOG.error('%s could not be loaded', _JWT_PRIVATE_KEY)
             logging.exception(e)
             exit(1)
 

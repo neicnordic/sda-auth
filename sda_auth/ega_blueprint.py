@@ -6,6 +6,9 @@ import logging
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
 ega_authenticator = EgaAuthenticator()
 
+LOG = logging.getLogger("ega")
+LOG.propagate = False
+
 
 def login():
     """Sign in to EGA."""
@@ -14,13 +17,13 @@ def login():
     else:
         form = forms.EgaLoginForm()
         if form.validate_on_submit():
-            logging.debug("Login form was successfullly validated")
+            LOG.debug("Login form was successfullly validated")
             if ega_authenticator.authenticate_with_ega(username=form.username.data, password=form.password.data):
                 return redirect(url_for("ega.info"), 302)
             else:
                 flash('Wrong username or password.')
         else:
-            logging.debug("Login form was not validated")
+            LOG.debug("Login form was not validated")
     return render_template('ega_login_form.html', title='EGA login', form=form)
 
 

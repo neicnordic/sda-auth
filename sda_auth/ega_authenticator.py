@@ -13,6 +13,9 @@ _AUTHORISATION_URL = config['CEGA_AUTH_URL']
 _CEGA_ID = config['CEGA_ID']
 _CEGA_SECRET = config['CEGA_SECRET']
 
+LOG = logging.getLogger("ega")
+LOG.propagate = False
+
 
 class EgaAuthenticator:
     """EGA authentication handler."""
@@ -39,21 +42,21 @@ class EgaAuthenticator:
 
             if password_is_correct:
                 flask_login.login_user(ega_user)
-                logging.info(f'{username} has been successfully logged in with EGA')
+                LOG.info('%s has been successfully logged in', username)
                 return True
             else:
-                logging.info(f'{username} could not be authenticated with EGA due to invalid credentials')
+                LOG.info('%s could not be authenticated due to invalid credentials', username)
                 return None
 
         else:
-            logging.info(f'{username} could not be authenticatedi with EGA due to this response: {response.status_code}: {response.content}')
+            LOG.info('%s could not be authenticated due to this response: %s: %s', username, response.status_code, response.content)
             return None
 
     @staticmethod
     def logout_from_ega():
         """Sign out from EGA."""
         flask_login.logout_user()
-        logging.debug("You have been successfully logged out from EGA")
+        LOG.debug("You have been successfully logged out")
         return redirect(url_for("index"), 302)
 
     @staticmethod
