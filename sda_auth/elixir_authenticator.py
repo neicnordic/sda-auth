@@ -78,7 +78,7 @@ class ElixirAuthenticator:
                 'state': state,
                 'nonce': nonce}
 
-        LOG.debug('%s is the redir', _ELIXIR_REDIRECT_URL)
+        LOG.debug('%s is the redirect URL', _ELIXIR_REDIRECT_URL)
         args.update(extra_auth_params)
         auth_request = self.client.construct_AuthorizationRequest(request_args=args,
                                                                   authn_method="client_secret_basic")
