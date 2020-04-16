@@ -67,7 +67,7 @@ def files_exist(files):
 def main():
     """Start the wsgi serving the application."""
     start_app(app)
-    LOG.debug(">>>>> Starting authentication server at {}:{} <<<<<".format(config["BIND_ADDRESS"], config["PORT"]))
+    LOG.debug(">>>>> Starting authentication server at %s:%s <<<<<", config["BIND_ADDRESS"], config["PORT"])
     LOG.debug('TLS flag is %s', config["ENABLE_TLS"])
 
     # Create gevent WSGI server
