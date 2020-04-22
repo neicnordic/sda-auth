@@ -10,16 +10,6 @@ from oic.utils import time_util
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from werkzeug.utils import redirect
 
-_CLIENT_ID = config['ELIXIR_ID']
-_CLIENT_SECRET = config['ELIXIR_SECRET']
-_AUTHORISATION_URL = config['ELIXIR_AUTH_URL']
-_ACCESS_TOKEN_URL = config['ELIXIR_TOKEN_URL']
-_JWKS_URL = config['ELIXIR_CERTS_URL']
-_USERINFO_URL = config['ELIXIR_USERINFO_URL']
-_ISSUER_URL = config['ELIXIR_ISSUER_URL']
-_TOKEN_REVOCATION_URL = config['ELIXIR_REVOCATION_URL']
-_ELIXIR_REDIRECT_URL = config['ELIXIR_REDIRECT_URI']
-_ELIXIR_SCOPE = config['ELIXIR_SCOPE']
 
 LOG = logging.getLogger("elixir")
 LOG.propagate = False
@@ -28,25 +18,35 @@ LOG.propagate = False
 class ElixirAuthenticator:
     """Elixir authentication handler."""
 
-    def __init__(self):
+    def __init__(self, id, secret, auth_url, token_url, jwks_url, userinfo_url, issuer_url, rev_url, redirect_url, scope):
         """Construct a Elixir authenticator class."""
+        self.id = id
+        self.auth_url = auth_url
+        self.secret = secret
+        self.token_url = token_url
+        self.jwks_url = jwks_url
+        self.userinfo_url = userinfo_url
+        self.issuer_url = issuer_url
+        self.rev_url = rev_url
+        self.redirect_url = redirect_url
+        self.scope = scope
         self.client = self.get_client()
 
     def get_client(self):
         """Retrieve the cllient for the OIDC auth."""
         client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
 
-        client_info = {"client_id": _CLIENT_ID,
-                       "client_secret": _CLIENT_SECRET}
+        client_info = {"client_id": self.id,
+                       "client_secret": self.secret}
 
         client_reg = RegistrationResponse(**client_info)
         client.store_registration_info(client_reg)
 
-        provider_info = {"issuer": _ISSUER_URL,
-                         "authorization_endpoint": _AUTHORISATION_URL,
-                         "token_endpoint": _ACCESS_TOKEN_URL,
-                         "userinfo_endpoint": _USERINFO_URL,
-                         "jwks_uri": _JWKS_URL}
+        provider_info = {"issuer": self.issuer_url,
+                         "authorization_endpoint": self.auth_url,
+                         "token_endpoint": self.token_url,
+                         "userinfo_endpoint": self.userinfo_url,
+                         "jwks_uri": self.jwks_url}
 
         op_info = ProviderConfigurationResponse(**provider_info)
         client.handle_provider_config(op_info, op_info['issuer'])
@@ -72,19 +72,19 @@ class ElixirAuthenticator:
         """Send user auth request."""
         args = {'response_type': 'code',
                 'grant_type': 'authorization_code',
-                'scope': _ELIXIR_SCOPE.split(),
+                'scope': self.scope.split(),
                 'timeout': '10',
-                'redirect_uri': _ELIXIR_REDIRECT_URL,
+                'redirect_uri': self.redirect_url,
                 'state': state,
                 'nonce': nonce}
 
-        LOG.debug('%s is the redirect URL', _ELIXIR_REDIRECT_URL)
+        LOG.debug('%s is the redirect URL', self.redirect_url)
         args.update(extra_auth_params)
         auth_request = self.client.construct_AuthorizationRequest(request_args=args,
                                                                   authn_method="client_secret_basic")
 
         LOG.debug('Sending authentication request: %s', auth_request.to_json())
-        return auth_request.request(_AUTHORISATION_URL)
+        return auth_request.request(self.auth_url)
 
     def handle_authentication_response(self):
         """Handle auth response."""
@@ -109,7 +109,7 @@ class ElixirAuthenticator:
         """Send token request."""
         args = {"response_type": 'access_token',
                 "grant_type": 'authorization_code',
-                "scope": _ELIXIR_SCOPE.split()}
+                "scope": self.scope.split()}
         htargs = {'timeout': 10}
 
         grant = Grant()
@@ -158,8 +158,7 @@ class ElixirAuthenticator:
         """Sign out from Elixir."""
         flask.session.pop("access_token")
 
-    @staticmethod
-    def revoke_token():
+    def revoke_token(self):
         """Revoke Elixir auth token."""
         LOG.debug('Revoking token...')
         access_token = flask.session.get("access_token", None)
@@ -167,7 +166,7 @@ class ElixirAuthenticator:
             return None
         else:
             token_payload = {"token": access_token}
-            response = requests.get(_TOKEN_REVOCATION_URL,
+            response = requests.get(self.rev_url,
                                     params=token_payload,
                                     auth=HTTPBasicAuth(config["ELIXIR_ID"],
                                                        config["ELIXIR_SECRET"]))

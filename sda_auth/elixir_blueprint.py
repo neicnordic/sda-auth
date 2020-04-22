@@ -1,10 +1,21 @@
 from sda_auth.elixir_authenticator import ElixirAuthenticator
+from sda_auth.settings import SERVICE_SETTINGS as config
 import flask
 import logging
 from flask import Blueprint, render_template, redirect, url_for, jsonify
 
+
 elixir_bp = Blueprint("elixir", __name__, url_prefix="/elixir")
-elixir_authenticator = ElixirAuthenticator()
+elixir_authenticator = ElixirAuthenticator(id=config['ELIXIR_ID'],
+                                           secret=config['ELIXIR_SECRET'],
+                                           auth_url=config['ELIXIR_AUTH_URL'],
+                                           token_url=config['ELIXIR_TOKEN_URL'],
+                                           jwks_url=config['ELIXIR_CERTS_URL'],
+                                           userinfo_url=config['ELIXIR_USERINFO_URL'],
+                                           issuer_url=config['ELIXIR_ISSUER_URL'],
+                                           rev_url=config['ELIXIR_REVOCATION_URL'],
+                                           redirect_url=config['ELIXIR_REDIRECT_URI'],
+                                           scope=config['ELIXIR_SCOPE'])
 
 LOG = logging.getLogger("elixir")
 LOG.propagate = False
