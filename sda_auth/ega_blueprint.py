@@ -1,10 +1,14 @@
 from flask import Blueprint, render_template, url_for, redirect, flash
 from ega_authenticator import EgaAuthenticator
+from sda_auth.settings import SERVICE_SETTINGS as config
 import sda_auth.forms as forms
 import logging
 
+
 ega_bp = Blueprint("ega", __name__, url_prefix="/ega")
-ega_authenticator = EgaAuthenticator()
+ega_authenticator = EgaAuthenticator(id=config['CEGA_ID'],
+                                     auth_url=config['CEGA_AUTH_URL'],
+                                     secret=config['CEGA_SECRET'])
 
 LOG = logging.getLogger("ega")
 LOG.propagate = False
