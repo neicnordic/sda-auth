@@ -30,25 +30,23 @@ LOG = logging.getLogger("default")
 LOG.propagate = False
 
 
-# Setup EGA Authenticator
-ega_login_manager = LoginManager()
-ega_login_manager.init_app(app)
-
-
-@ega_login_manager.user_loader
-def load_user(loaded_ega_id):
+def load_ega_user(loaded_ega_id):
     """Load logged in user."""
     return EgaUser(ega_id=loaded_ega_id)
 
 
-@app.route("/")
 def index():
     """Return the index page."""
     return render_template("index.html")
 
 
 def start_app(flask_app):
-    """Register EGA and Elixir blueprints."""
+    """Register routes and start EGA login manager."""
+    ega_login_manager = LoginManager()
+    ega_login_manager.user_loader(load_ega_user)
+    ega_login_manager.init_app(app)
+
+    flask_app.add_url_rule('/', 'index', view_func=index)
     flask_app.register_blueprint(elixir_blueprint.elixir_bp)
     flask_app.register_blueprint(ega_blueprint.ega_bp)
 
