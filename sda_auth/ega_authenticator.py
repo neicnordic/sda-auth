@@ -1,4 +1,3 @@
-from sda_auth.settings import SERVICE_SETTINGS as config
 import requests
 from requests.auth import HTTPBasicAuth
 import logging
@@ -9,10 +8,6 @@ from flask import redirect, url_for
 import bcrypt
 
 
-_AUTHORISATION_URL = config['CEGA_AUTH_URL']
-_CEGA_ID = config['CEGA_ID']
-_CEGA_SECRET = config['CEGA_SECRET']
-
 LOG = logging.getLogger("ega")
 LOG.propagate = False
 
@@ -20,9 +15,12 @@ LOG.propagate = False
 class EgaAuthenticator:
     """EGA authentication handler."""
 
-    def __init__(self, id_type='username'):
+    def __init__(self, id, auth_url, secret, id_type='username'):
         """Construct a EGA authenticator class."""
         self.id_type = id_type
+        self.id = id
+        self.auth_url = auth_url
+        self.secret = secret
 
     def authenticate_with_ega(self, username, password):
         """Sign in with EGA credentials."""
@@ -30,10 +28,10 @@ class EgaAuthenticator:
 
         id_type_payload = {"idType": self.id_type}
         user_id = ega_user.get_id()
-        response = requests.get(f'{_AUTHORISATION_URL}{user_id}',
+        response = requests.get(f'{self.auth_url}{user_id}',
                                 params=id_type_payload,
-                                auth=HTTPBasicAuth(_CEGA_ID,
-                                                   _CEGA_SECRET))
+                                auth=HTTPBasicAuth(self.id,
+                                                   self.secret))
 
         if response.status_code == 200:
             password_hash = json.loads(response.text)['response']['result'][0]['passwordHash']
