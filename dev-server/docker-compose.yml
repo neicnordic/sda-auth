@@ -12,6 +12,12 @@ services:
       - CLIENT_ID=XC56EL11xx
       - CLIENT_SECRET=wHPVQaYXmdDHg
       - CLIENT_REDIRECT_URI=http://localhost:31111/elixir/login
+      - AUTH_ROUTE=/auth
+      - INTROSPECTION_ROUTE=/token/introspection
+      - JWKS_ROUTE=/jwks
+      - REVOCATION_ROUTE=/token/revocation
+      - TOKEN_ROUTE=/token
+      - USERINFO_ROUTE=/userinfo
     ports:
       - 9090:9090
   cega:

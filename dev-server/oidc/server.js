@@ -25,6 +25,14 @@ const oidcConfig = {
     AccessToken: 'jwt',
     RefreshToken: 'jwt'
   },
+  routes: {
+    authorization: process.env.AUTH_ROUTE || '/auth',
+    introspection: process.env.INTROSPECTION_ROUTE || '/token/introspection',
+    certificates: process.env.JWKS_ROUTE || '/jwks',
+    revocation: process.env.REVOCATION_ROUTE ||'/token/revocation',
+    token: process.env.TOKEN_ROUTE || '/token',
+    userinfo: process.env.USERINFO_ROUTE ||'/userinfo'
+  },
    scopes: [
      'openid',
      'ga4gh_passport_v1',
