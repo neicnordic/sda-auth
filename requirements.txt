@@ -6,7 +6,7 @@ PyYAML==5.3.1
 requests==2.24.0
 bcrypt==3.2.0
 tox==3.19.0
-python-jose==3.1.0
+python-jose==3.2.0
 cryptography==2.9
 oic==1.2.0
 beautifulsoup4==4.9.0
