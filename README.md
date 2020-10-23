@@ -8,31 +8,19 @@ The following settings can be configured for deploying the service, either by us
 
 Parameter | Description | Defined value
 --------- | ----------- | -------
-`LOG_LEVEL` | Log level | `DEBUG`
-`CONF_FILE_PATH` | Settings file path | `settings-sample.yaml`
-`ELIXIR_REDIRECT_URI` | Redirect URL for Elixir authentication | `/elixir/login`
+`LOG_LEVEL` | Log level | `info`
 `ELIXIR_ID` | Elixir authentication id | `XC56EL11xx`
 `ELIXIR_SECRET` | Elixir authentication secret | `wHPVQaYXmdDHg`
-`ELIXIR_AUTH_URL` | Elixir authentication endpoint | `http://localhost:9090/auth`
-`ELIXIR_TOKEN_URL` | Elixir token endpoint | `http://localhost:9090/token`
-`ELIXIR_CERTS_URL` | Elixir certificates endpoint | `http://localhost:9090/certs`
-`ELIXIR_USERINFO_URL` | Elixir user info endpoint | `http://localhost:9090/me`
-`ELIXIR_ISSUER_URL` | Elixir issuer URL | `http://localhost:9090`
-`ELIXIR_REVOCATION_URL` | Elixir token revocation endpoint | `http://localhost:9090`
-`ELIXIR_SCOPE` | Elixir OIDC scopes, separated by space. You may choose "openid" or "openid ga4gh_passport_v1" | `openid`
-`CEGA_AUTH_URL` | CEGA server endpoint | `http://localhost:8443/lega/v1/legas/users/`
+`ELIXIR_ISSUER` | Elixir issuer URL | `http://oidc:9090`
+`ELIXIR_SCOPE` | Elixir OIDC scopes, separated by space. You may choose "openid" or "openid ga4gh_passport_v1" | `ga4gh_passport_v1`
+`CEGA_AUTHURL` | CEGA server endpoint | `http://cega:8443/lega/v1/legas/users/`
 `CEGA_ID` | CEGA server authentication id | `dummy`
 `CEGA_SECRET` | CEGA server authentication secret | `dummy`
-`JWT_PRIVATE_KEY` | Path to private key for signing the JWT token | `keys/sign-jwt.key`
-`JWT_SIGNATURE_ALG` | Algorithm used to sign the JWT token. ES (ECDSA) and RS (RSA) are common choices | `ES256`
-`BIND_ADDRESS` | Binding address for the web server container | `localhost`
-`PORT` | Port for the web server container | `31111`
-`SERVER_NAME` | Qualified endpoint for the web server | `localhost:31111`
-`URL_SCHEME` | URL scheme may be http or https | `http`
-`SECRET_KEY` | Secret hash used to protect user sessions | `"de8b3fe55c7d9fb32de24b8428470876f00021f88c9eb7ff"`
-`CERT_FILE` | Certificate file path | `""`
-`KEY_FILE` | Private key file path | `""`
-`CA_CERTS` | (Root) CA certificate file path | `""`
+`CEGA_JWTPRIVATEKEY` | Path to private key for signing the JWT token | `keys/sign-jwt.key`
+`CEGA_JWTSIGNATUREALG` | Algorithm used to sign the JWT token. ES (ECDSA) and RS (RSA) are common choices | `ES256`
+`CEGA_JWTISSUER` | Issuer of CEGA JWT tokens | `http://auth:8080`
+`SERVER_CERT` | Certificate file path | `""`
+`SERVER_KEY` | Private key file path | `""`
 
 ## Running the development setup
 

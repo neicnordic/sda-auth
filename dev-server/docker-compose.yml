@@ -11,7 +11,7 @@ services:
       - HOST=oidc
       - CLIENT_ID=XC56EL11xx
       - CLIENT_SECRET=wHPVQaYXmdDHg
-      - CLIENT_REDIRECT_URI=http://localhost:31111/elixir/login
+      - CLIENT_REDIRECT_URI=http://localhost:8080/elixir/login
       - AUTH_ROUTE=/auth
       - INTROSPECTION_ROUTE=/token/introspection
       - JWKS_ROUTE=/jwks
@@ -37,12 +37,24 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
+    depends_on:
+        - oidc
+        - cega
     environment:
-      - LOG_LEVEL=DEBUG
-      - CONF_FILE_PATH=/sda-auth/settings-sample.yaml
+      - ELIXIR_ID=XC56EL11xx
+      - ELIXIR_ISSUER=http://oidc:9090
+      - ELIXIR_SECRET=wHPVQaYXmdDHg
+      - ELIXIR_SCOPE=ga4gh_passport_v1
+      - CEGA_AUTHURL=http://cega:8443/lega/v1/legas/users/
+      - CEGA_ID=dummy
+      - CEGA_JWTISSUER=http://auth:8080
+      - CEGA_JWTPRIVATEKEY=keys/sign-jwt.key
+      - CEGA_JWTSIGNATUREALG=ES256
+      - CEGA_SECRET=dummy
+      - LOG_LEVEL=info
     volumes:
       - ../keys:/keys
       - ../:/sda-auth
     image: sda-auth
     ports:
-      - 31111:31111
+      - 8080:8080

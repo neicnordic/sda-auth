@@ -1,13 +1,19 @@
-FROM python:3.8.5-alpine
+FROM golang:1.14.9-alpine3.12
+RUN apk add --no-cache git
+COPY . .
+ENV GO111MODULE=on
+ENV GOPATH=$PWD
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+RUN go build -ldflags "-extldflags -static" -o ./build/svc .
+RUN echo "nobody:x:65534:65534:nobody:/:/sbin/nologin" > passwd
 
-WORKDIR /sda-auth
+FROM scratch
+COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=0 /go/build/svc svc
+COPY --from=0 /go/frontend frontend/
+COPY --from=0 /go/passwd /etc/passwd
+USER 65534
+EXPOSE 8080
+ENTRYPOINT [ "/svc" ]
 
-COPY . ./
-
-RUN apk add --no-cache --virtual deps gcc musl-dev libffi-dev openssl-dev file make && \
-    pip install -r requirements.txt && \
-    python setup.py install && \
-    apk del deps && \
-    rm -rf /root/.cache
-
-CMD ["python", "sda_auth/route.py"]

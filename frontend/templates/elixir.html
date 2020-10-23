@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SDA authentication service</title>
-<link rel="stylesheet" href="public/bootstrap.min.css">
+<link rel="stylesheet" href="../public/bootstrap.min.css">
 </head>
 
 <body>
@@ -24,31 +24,30 @@
           </ul>
         </div>
     </nav>
-    <div class="jumbotron text-center" role="region">
-  <div class="container" style="max-width: 800px;">
-    <div class="row justify-content-md-center">
-      <div class="col-sm">
-        <h3>SDA authentication service</h3>
+    <div class="jumbotron" role="region">
+      <div class="container" style="max-width: 600px">
+            <p class="lead text-center">
+              Welcome, {{.User}}!
+            </p>
+            {{if .Passport}}
+            <p class="text-center">
+              Your visas are the following:
+            <p>
+            {{ range .Passport }}
+            <pre class="border border-secondary rounded py-2 px-3 my-4" style="user-select: all;">{{.}}</pre>
+            {{ end }}
+            {{ end }}
+            {{if .Token}}
+            <p class="text-center">
+              Your access token is:
+            <p>
+            <pre class="border border-secondary rounded py-2 px-3 my-4" style="user-select: all;">{{.Token}}</pre>
+            {{end}}
+            <a href="/" class="btn btn-primary btn-block">Continue</a>
+            <a href="/" class="btn btn-danger btn-block">Log out</a>
       </div>
     </div>
-    <div class="row">
-        <div class="col-sm py-3">
-          <p class="lead">
-            For logging in with Elixir please click here:
-          </p>
-          <a class="btn btn-primary btn-lg btn-block" href="/elixir">Log in with Elixir</a>
-        </div>
-        <div class="col-sm py-3">
-          <p class="lead">
-            For logging in with EGA please click here:
-          </p>
-          <a class="btn btn-primary btn-lg btn-block" href="/ega/login">Log in with EGA</a>
-        </div>
-    </div>
-  </div>
-</div>
-    <script src="public/jquery-3.5.1.min.js"></script>
-    <script src="public/bootstrap.min.js"></script>
-</body>
+    <script src="../public/jquery-3.5.1.min.js"></script>
+    <script src="../public/bootstrap.min.js"></script>
+  </body>
 </html>
-
