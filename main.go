@@ -14,6 +14,7 @@ import (
 	"github.com/coreos/go-oidc"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/sessions"
 	ulid "github.com/oklog/ulid/v2"
 	log "github.com/sirupsen/logrus"
 	bcrypt "golang.org/x/crypto/bcrypt"
@@ -26,15 +27,23 @@ type EGAIdentity struct {
 	User  string
 	Token string
 }
+
+// EGALoginError is used to store message errors
 type EGALoginError struct {
 	Reason string
 }
+
+// CegaUserResponse captures the response key
 type CegaUserResponse struct {
 	Results CegaUserResults `json:"response"`
 }
+
+// CegaUserResults captures the result key
 type CegaUserResults struct {
 	Response []CegaUserInfo `json:"result"`
 }
+
+// CegaUserInfo captures the password hash
 type CegaUserInfo struct {
 	PasswordHash string `json:"passwordHash"`
 }
@@ -102,33 +111,47 @@ func generateJwtToken(issuer, sub, key, alg string) string {
 	return tokenString
 }
 
-func main() {
-	// Initialise config
-	config := NewConfig()
-
-	// Initialise web server
-	app := iris.New()
-	app.RegisterView(iris.HTML("./frontend/templates", ".html"))
-	app.HandleDir("/public", iris.Dir("./frontend/static"))
-
+// Configure an OpenID Connect aware OAuth2 client.
+func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 	contx := context.Background()
-	provider, err := oidc.NewProvider(contx, config.Elixir.issuer)
+	provider, err := oidc.NewProvider(contx, conf.issuer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Configure an OpenID Connect aware OAuth2 client.
 	oauth2Config := oauth2.Config{
-		ClientID:     config.Elixir.id,
-		ClientSecret: config.Elixir.secret,
-		RedirectURL:  config.Elixir.redirectUrl,
+		ClientID:     conf.id,
+		ClientSecret: conf.secret,
+		RedirectURL:  conf.redirectURL,
 		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, config.Elixir.scope},
+		Scopes:       []string{oidc.ScopeOpenID, conf.scope},
 	}
+
+	return oauth2Config, provider
+}
+
+func main() {
+	// Initialise config
+	config := NewConfig()
+
+	// Initialise OIDC client
+	oauth2Config, provider := getOidcClient(config.Elixir)
+
+	// Initialise web server
+	app := iris.New()
+
+	// Start sessions handler in order to send flash messages
+	sess := sessions.New(sessions.Config{Cookie: "_session_id", AllowReclaim: true})
+	app.Use(sess.Handler())
+
+	app.RegisterView(iris.HTML("./frontend/templates", ".html"))
+	app.HandleDir("/public", iris.Dir("./frontend/static"))
 
 	app.Get("/", indexView)
 
 	app.Post("/ega", func(ctx iris.Context) {
+
+		s := sessions.Get(ctx)
 
 		userform := ctx.FormValues()
 		username := userform["username"][0]
@@ -136,7 +159,7 @@ func main() {
 
 		client := &http.Client{}
 		payload := strings.NewReader("")
-		req, err := http.NewRequest("GET", fmt.Sprintf("%s%s?idType=username", config.Cega.authUrl, username), payload)
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s%s?idType=username", config.Cega.authURL, username), payload)
 
 		if err != nil {
 			log.Fatal(err)
@@ -177,21 +200,31 @@ func main() {
 
 			} else {
 				log.Error("Invalid password entered by user: ", username)
-				ctx.View("loginform.html", EGALoginError{Reason: "Provided credentials are not valid"})
+				s.SetFlash("message", "Provided credentials are not valid")
+				ctx.Redirect("/ega/login", iris.StatusSeeOther)
 			}
 
 		} else if res.StatusCode == 404 {
 			log.Error("Failed to authenticate user: ", username)
-			ctx.View("loginform.html", EGALoginError{Reason: "EGA authentication server could not be contacted"})
+			s.SetFlash("message", "EGA authentication server could not be contacted")
+			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 
 		} else {
 			log.Error("Failed to authenticate user: ", username)
-			ctx.View("loginform.html", EGALoginError{Reason: "Provided credentials are not valid"})
+			s.SetFlash("message", "Provided credentials are not valid")
+			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 		}
 	})
 
 	app.Get("/ega/login", func(ctx iris.Context) {
-		ctx.View("loginform.html")
+		s := sessions.Get(ctx)
+		message := s.GetFlashString("message")
+		log.Info(s.GetFlashes())
+		if message == "" {
+			ctx.View("loginform.html")
+			return
+		}
+		ctx.View("loginform.html", EGALoginError{Reason: message})
 	})
 
 	app.Get("/elixir", func(ctx iris.Context) {
@@ -201,16 +234,10 @@ func main() {
 		ctx.Redirect(oauth2Config.AuthCodeURL(state.String()))
 	})
 
-	app.Get("/elixir/logout", func(ctx iris.Context) {
-		log.Println("Logging out user")
-		ctx.RemoveCookie("_grant")
-		ctx.RemoveCookie("_session")
-		ctx.Redirect("/")
-	})
-
 	app.Get("/elixir/login", func(ctx iris.Context) {
 		contx := context.Background()
 		defer contx.Done()
+		log.Info(ctx.Request().Body)
 
 		oauth2Token, err := oauth2Config.Exchange(contx, ctx.Request().URL.Query().Get("code"))
 		if err != nil {
@@ -252,7 +279,7 @@ func main() {
 
 		idStruct := ElixirIdentity{User: userInfo.Subject, Token: rawIDToken, Passport: claims.PassportClaim}
 
-		log.Info("User %s was authenticated")
+		log.Infoln("User was authenticated: ", userInfo.Subject)
 		ctx.View("elixir.html", idStruct)
 	})
 

@@ -19,14 +19,14 @@ var (
 type ElixirConfig struct {
 	id          string
 	issuer      string
-	redirectUrl string
+	redirectURL string
 	secret      string
 	scope       string
 }
 
 // CegaConfig stores information about the cega endpoint
 type CegaConfig struct {
-	authUrl         string
+	authURL         string
 	id              string
 	jwtIssuer       string
 	jwtPrivateKey   string
@@ -66,7 +66,7 @@ func (c *Config) readConfig() {
 
 	elixir.id = viper.GetString("elixir.id")
 	elixir.issuer = viper.GetString("elixir.issuer")
-	elixir.redirectUrl = viper.GetString("elixir.redirectUrl")
+	elixir.redirectURL = viper.GetString("elixir.redirectUrl")
 	elixir.secret = viper.GetString("elixir.secret")
 	elixir.scope = viper.GetString("elixir.scope")
 
@@ -75,7 +75,7 @@ func (c *Config) readConfig() {
 	// Setup cega
 	cega := CegaConfig{}
 
-	cega.authUrl = viper.GetString("cega.authUrl")
+	cega.authURL = viper.GetString("cega.authUrl")
 	cega.id = viper.GetString("cega.id")
 	cega.jwtIssuer = viper.GetString("cega.jwtIssuer")
 	cega.jwtPrivateKey = viper.GetString("cega.jwtPrivateKey")
