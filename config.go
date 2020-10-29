@@ -11,7 +11,8 @@ import (
 var (
 	requiredConfVars = []string{
 		"elixir.id", "elixir.issuer", "elixir.redirectUrl", "elixir.secret", "elixir.scope",
-		"cega.authUrl", "cega.id", "cega.jwtIssuer", "cega.jwtPrivateKey", "cega.jwtSignatureAlg", "cega.secret",
+		"cega.authUrl", "cega.id", "cega.jwtIssuer", "cega.jwtPrivateKey", "cega.jwtSignatureAlg",
+		"cega.secret", "s3Inbox",
 	}
 )
 
@@ -44,9 +45,10 @@ type ServerConfig struct {
 
 // Config is a parent object for all the different configuration parts
 type Config struct {
-	Elixir ElixirConfig
-	Cega   CegaConfig
-	Server ServerConfig
+	Elixir  ElixirConfig
+	Cega    CegaConfig
+	Server  ServerConfig
+	S3Inbox string
 }
 
 // NewConfig initializes and parses the config file and/or environment using
@@ -95,6 +97,8 @@ func (c *Config) readConfig() {
 	}
 
 	c.Server = s
+
+	c.S3Inbox = viper.GetString("s3Inbox")
 
 	if viper.IsSet("log.level") {
 		stringLevel := viper.GetString("log.level")
