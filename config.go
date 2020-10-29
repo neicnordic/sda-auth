@@ -37,10 +37,8 @@ type CegaConfig struct {
 
 // ServerConfig stores general server information
 type ServerConfig struct {
-	address string
-	cert    string
-	key     string
-	port    string
+	cert string
+	key  string
 }
 
 // Config is a parent object for all the different configuration parts
@@ -131,7 +129,7 @@ func parseConfig() {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Infoln("No config file found, using ENVs only")
 		} else {
-			log.Fatalln("Error when reading config file: '%s'", err)
+			log.Fatalf("Error when reading config file: '%s'", err)
 		}
 	}
 }

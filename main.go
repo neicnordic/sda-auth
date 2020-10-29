@@ -50,8 +50,8 @@ func main() {
 
 		defer res.Body.Close()
 
-		if res.StatusCode == 200 {
-
+		switch res.StatusCode {
+		case 200:
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -68,25 +68,30 @@ func main() {
 
 			ok := verifyPassword(password, hash)
 
-			if ok == true {
+			if ok {
 				log.Info("Valid password entered by user: ", username)
 				token := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
 				s3conf := getS3ConfigMap(token, config.S3Inbox, username)
 				idStruct := EGAIdentity{User: username, Token: token}
 				s.SetFlash("s3conf", s3conf)
-				ctx.View("ega.html", idStruct)
+				err := ctx.View("ega.html", idStruct)
+				if err != nil {
+					log.Error("Failed to parse response: ", err)
+					return
+				}
 
 			} else {
 				log.Error("Invalid password entered by user: ", username)
 				s.SetFlash("message", "Provided credentials are not valid")
 				ctx.Redirect("/ega/login", iris.StatusSeeOther)
 			}
-		} else if res.StatusCode == 404 {
+
+		case 404:
 			log.Error("Failed to authenticate user: ", username)
 			s.SetFlash("message", "EGA authentication server could not be contacted")
 			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 
-		} else {
+		default:
 			log.Error("Failed to authenticate user: ", username)
 			s.SetFlash("message", "Provided credentials are not valid")
 			ctx.Redirect("/ega/login", iris.StatusSeeOther)
@@ -109,17 +114,30 @@ func main() {
 			s3c = s3c + entry
 		}
 
-		io.Copy(ctx.ResponseWriter(), strings.NewReader(s3c))
+		_, err := io.Copy(ctx.ResponseWriter(), strings.NewReader(s3c))
+		if err != nil {
+			log.Error("Failed to write s3config response: ", err)
+			return
+		}
+
 	})
 
 	app.Get("/ega/login", func(ctx iris.Context) {
 		s := sessions.Get(ctx)
 		message := s.GetFlashString("message")
 		if message == "" {
-			ctx.View("loginform.html")
+			err := ctx.View("loginform.html")
+			if err != nil {
+				log.Error("Failed to return to login form: ", err)
+				return
+			}
 			return
 		}
-		ctx.View("loginform.html", EGALoginError{Reason: message})
+		err := ctx.View("loginform.html", EGALoginError{Reason: message})
+		if err != nil {
+			log.Error("Failed to view invalid credentials form: ", err)
+			return
+		}
 	})
 
 	app.Get("/elixir", func(ctx iris.Context) {
@@ -133,8 +151,12 @@ func main() {
 		sessionState := ctx.GetCookie("state")
 
 		if state != sessionState {
-			log.Errorf("State of incoming request (%s) does not match with your session's state (%s)", state)
-			ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
+			log.Errorf("State of incoming request (%s) does not match with your session's state (%s)", state, sessionState)
+			_, err := ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
+			if err != nil {
+				log.Error("Failed to write response: ", err)
+				return
+			}
 			return
 		}
 
@@ -143,23 +165,37 @@ func main() {
 
 		if err != nil {
 			log.Error(err)
-			ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
+			_, err := ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
+			if err != nil {
+				log.Error("Failed to write response: ", err)
+				return
+			}
 			return
 		}
 		log.Infof("User was authenticated: %s", idStruct.User)
-		ctx.View("elixir.html", idStruct)
+		err = ctx.View("elixir.html", idStruct)
+		if err != nil {
+			log.Error("Failed to view login form: ", err)
+			return
+		}
 	})
 
 	if config.Server.cert != "" && config.Server.key != "" {
 
 		log.Infoln("Serving content using https")
-		app.Run(iris.TLS("0.0.0.0:8080", config.Server.cert, config.Server.key))
-
+		err := app.Run(iris.TLS("0.0.0.0:8080", config.Server.cert, config.Server.key))
+		if err != nil {
+			log.Error("Failed to start server:", err)
+			return
+		}
 	} else {
 
 		log.Infoln("Serving content using http")
 		server := &http.Server{Addr: "0.0.0.0:8080"}
-		app.Run(iris.Server(server))
-
+		err := app.Run(iris.Server(server))
+		if err != nil {
+			log.Error("Failed to start server:", err)
+			return
+		}
 	}
 }
