@@ -1,6 +1,6 @@
 package main
 
-// Configure an OpenID Connect aware OAuth2 client.
+// Retrieve a config map containing s3cmd configuration values
 func getS3ConfigMap(token, inboxHost, user string) map[string]string {
 	s3conf := map[string]string{"access_key": user,
 		"secret_key":              user,
