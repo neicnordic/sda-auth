@@ -1,134 +1,17 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
-	"math/rand"
-	"net/http"
-	"time"
-
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
 
-	"github.com/coreos/go-oidc"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/sessions"
-	ulid "github.com/oklog/ulid/v2"
 	log "github.com/sirupsen/logrus"
-	bcrypt "golang.org/x/crypto/bcrypt"
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 )
-
-// EGAIdentity represents an EGA user instance
-type EGAIdentity struct {
-	User  string
-	Token string
-}
-
-// EGALoginError is used to store message errors
-type EGALoginError struct {
-	Reason string
-}
-
-// CegaUserResponse captures the response key
-type CegaUserResponse struct {
-	Results CegaUserResults `json:"response"`
-}
-
-// CegaUserResults captures the result key
-type CegaUserResults struct {
-	Response []CegaUserInfo `json:"result"`
-}
-
-// CegaUserInfo captures the password hash
-type CegaUserInfo struct {
-	PasswordHash string `json:"passwordHash"`
-}
-
-// ElixirIdentity represents an Elixir user instance
-type ElixirIdentity struct {
-	User     string
-	Passport []string
-	Token    string
-}
-
-// Return base64 encoded credentials for basic auth
-func getb64Credentials(username, password string) string {
-	creds := username + ":" + password
-	return base64.StdEncoding.EncodeToString([]byte(creds))
-}
-
-// Check whether the returned hash corresponds to the given password
-func verifyPassword(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-// Return base64 encoded credentials for basic auth
-func generateJwtToken(issuer, sub, key, alg string) string {
-	// Create a new token object by specifying signing method and the needed claims
-
-	ttl := 200 * time.Hour
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.StandardClaims{
-		ExpiresAt: time.Now().UTC().Add(ttl).Unix(),
-		Issuer:    issuer,
-		Subject:   sub,
-	})
-	data, err := ioutil.ReadFile(key)
-	var tokenString string
-
-	switch alg {
-	case "ES256":
-		pk, err := jwt.ParseECPrivateKeyFromPEM(data)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-		tokenString, err = token.SignedString(pk)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-	case "RS256":
-		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-		tokenString, err = token.SignedString(pk)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-	}
-
-	if err != nil {
-		log.Fatal(err, tokenString)
-	}
-	// Sign and get the complete encoded token
-	if err != nil {
-		log.Error("Token could not be fetched: ", err)
-	}
-	return tokenString
-}
-
-// Configure an OpenID Connect aware OAuth2 client.
-func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
-	contx := context.Background()
-	provider, err := oidc.NewProvider(contx, conf.issuer)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	oauth2Config := oauth2.Config{
-		ClientID:     conf.id,
-		ClientSecret: conf.secret,
-		RedirectURL:  conf.redirectURL,
-		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, conf.scope},
-	}
-
-	return oauth2Config, provider
-}
 
 func main() {
 	// Initialise config
@@ -147,7 +30,9 @@ func main() {
 	app.RegisterView(iris.HTML("./frontend/templates", ".html"))
 	app.HandleDir("/public", iris.Dir("./frontend/static"))
 
-	app.Get("/", indexView)
+	app.Get("/", func(ctx iris.Context) {
+		ctx.View("index.html")
+	})
 
 	app.Post("/ega", func(ctx iris.Context) {
 
@@ -157,21 +42,10 @@ func main() {
 		username := userform["username"][0]
 		password := userform["password"][0]
 
-		client := &http.Client{}
-		payload := strings.NewReader("")
-		req, err := http.NewRequest("GET", fmt.Sprintf("%s%s?idType=username", config.Cega.authURL, username), payload)
+		res, err := authenticateWithCEGA(config.Cega, username)
 
 		if err != nil {
-			log.Fatal(err)
-		}
-
-		req.Header.Add("Authorization", "Basic "+getb64Credentials(config.Cega.id, config.Cega.secret))
-		req.Header.Add("Content-Type", "application/json")
-
-		res, err := client.Do(req)
-
-		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 
 		defer res.Body.Close()
@@ -192,10 +66,14 @@ func main() {
 
 			hash := ur.Results.Response[0].PasswordHash
 
-			if verifyPassword(password, hash) == true {
+			ok := verifyPassword(password, hash)
+
+			if ok == true {
 				log.Info("Valid password entered by user: ", username)
 				token := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
+				s3conf := getS3ConfigMap(token, config.S3Inbox, username)
 				idStruct := EGAIdentity{User: username, Token: token}
+				s.SetFlash("s3conf", s3conf)
 				ctx.View("ega.html", idStruct)
 
 			} else {
@@ -203,7 +81,6 @@ func main() {
 				s.SetFlash("message", "Provided credentials are not valid")
 				ctx.Redirect("/ega/login", iris.StatusSeeOther)
 			}
-
 		} else if res.StatusCode == 404 {
 			log.Error("Failed to authenticate user: ", username)
 			s.SetFlash("message", "EGA authentication server could not be contacted")
@@ -216,10 +93,28 @@ func main() {
 		}
 	})
 
+	app.Get("/ega/s3conf", func(ctx iris.Context) {
+		s := sessions.Get(ctx)
+		s3conf := s.GetFlash("s3conf")
+		if s3conf == nil {
+			ctx.Redirect("/")
+			return
+		}
+		s3cfmap := s3conf.(map[string]string)
+		ctx.ResponseWriter().Header().Set("Content-Disposition", "attachment; filename=s3cmd.conf")
+		var s3c string
+
+		for k, v := range s3cfmap {
+			entry := fmt.Sprintf("%s = %s\n", k, v)
+			s3c = s3c + entry
+		}
+
+		io.Copy(ctx.ResponseWriter(), strings.NewReader(s3c))
+	})
+
 	app.Get("/ega/login", func(ctx iris.Context) {
 		s := sessions.Get(ctx)
 		message := s.GetFlashString("message")
-		log.Info(s.GetFlashes())
 		if message == "" {
 			ctx.View("loginform.html")
 			return
@@ -228,58 +123,30 @@ func main() {
 	})
 
 	app.Get("/elixir", func(ctx iris.Context) {
-		t := time.Unix(1000000, 0)
-		entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
-		state := ulid.MustNew(ulid.Timestamp(t), entropy)
+		state := uuid.New()
+		ctx.SetCookie(&http.Cookie{Name: "state", Value: state.String(), Secure: true})
 		ctx.Redirect(oauth2Config.AuthCodeURL(state.String()))
 	})
 
 	app.Get("/elixir/login", func(ctx iris.Context) {
-		contx := context.Background()
-		defer contx.Done()
-		log.Info(ctx.Request().Body)
+		state := ctx.Request().URL.Query().Get("state")
+		sessionState := ctx.GetCookie("state")
 
-		oauth2Token, err := oauth2Config.Exchange(contx, ctx.Request().URL.Query().Get("code"))
+		if state != sessionState {
+			log.Errorf("State of incoming request (%s) does not match with your session's state (%s)", state)
+			ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
+			return
+		}
+
+		code := ctx.Request().URL.Query().Get("code")
+		idStruct, err := authenticateWithOidc(oauth2Config, provider, code)
+
 		if err != nil {
-			log.Error("Failed to fetch oauth2 code")
+			log.Error(err)
+			ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
 			return
 		}
-
-		// Extract the ID Token from OAuth2 token.
-		rawIDToken, ok := oauth2Token.Extra("id_token").(string)
-		if !ok {
-			log.Error("Failed to extract a valid id token from OAuth2 token")
-			return
-		}
-
-		var verifier = provider.Verifier(&oidc.Config{ClientID: oauth2Config.ClientID})
-
-		// Parse and verify ID Token payload.
-		_, err = verifier.Verify(contx, rawIDToken)
-		if err != nil {
-			log.Error("Failed to verify id token")
-			return
-		}
-
-		// Fetch user information
-		userInfo, err := provider.UserInfo(contx, oauth2.StaticTokenSource(oauth2Token))
-		if err != nil {
-			log.Error("Failed to get userinfo")
-			return
-		}
-
-		// Extract custom ga4gh_passport_v1 claim
-		var claims struct {
-			PassportClaim []string `json:"ga4gh_passport_v1"`
-		}
-		if err := userInfo.Claims(&claims); err != nil {
-			log.Error("Failed to get custom ga4gh_passport_v1 claim")
-			return
-		}
-
-		idStruct := ElixirIdentity{User: userInfo.Subject, Token: rawIDToken, Passport: claims.PassportClaim}
-
-		log.Infoln("User was authenticated: ", userInfo.Subject)
+		log.Infof("User was authenticated: %s", idStruct.User)
 		ctx.View("elixir.html", idStruct)
 	})
 
@@ -295,8 +162,4 @@ func main() {
 		app.Run(iris.Server(server))
 
 	}
-}
-
-func indexView(ctx iris.Context) {
-	ctx.View("index.html")
 }
