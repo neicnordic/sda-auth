@@ -85,18 +85,18 @@ func main() {
 				}
 
 			} else {
-				log.WithFields(log.Fields{"authType": "cega"}).Error("Invalid password entered by user: ", username)
+				log.WithFields(log.Fields{"authType": "cega", "user": username}).Error("Invalid password entered by user")
 				s.SetFlash("message", "Provided credentials are not valid")
 				ctx.Redirect("/ega/login", iris.StatusSeeOther)
 			}
 
 		case 404:
-			log.WithFields(log.Fields{"authType": "cega"}).Error("Failed to authenticate user: ", username)
+			log.WithFields(log.Fields{"authType": "cega", "user": username}).Error("Failed to authenticate user")
 			s.SetFlash("message", "EGA authentication server could not be contacted")
 			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 
 		default:
-			log.WithFields(log.Fields{"authType": "cega"}).Error("Failed to authenticate user: ", username)
+			log.WithFields(log.Fields{"authType": "cega", "user": username}).Error("Failed to authenticate user")
 			s.SetFlash("message", "Provided credentials are not valid")
 			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 		}
@@ -176,7 +176,7 @@ func main() {
 			}
 			return
 		}
-		log.WithFields(log.Fields{"authType": "elixir"}).Infof("User was authenticated: %s", idStruct.User)
+		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 		err = ctx.View("elixir.html", idStruct)
 		if err != nil {
 			log.Error("Failed to view login form: ", err)
