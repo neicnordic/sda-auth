@@ -73,7 +73,7 @@ func main() {
 			ok := verifyPassword(password, hash)
 
 			if ok {
-				log.Info("Valid password entered by user: ", username)
+				log.WithFields(log.Fields{"authType": "cega"}).Info("Valid password entered by user: ", username)
 				token := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
 				s3conf := getS3ConfigMap(token, config.S3Inbox, username)
 				idStruct := EGAIdentity{User: username, Token: token}
@@ -85,18 +85,18 @@ func main() {
 				}
 
 			} else {
-				log.Error("Invalid password entered by user: ", username)
+				log.WithFields(log.Fields{"authType": "cega"}).Error("Invalid password entered by user: ", username)
 				s.SetFlash("message", "Provided credentials are not valid")
 				ctx.Redirect("/ega/login", iris.StatusSeeOther)
 			}
 
 		case 404:
-			log.Error("Failed to authenticate user: ", username)
+			log.WithFields(log.Fields{"authType": "cega"}).Error("Failed to authenticate user: ", username)
 			s.SetFlash("message", "EGA authentication server could not be contacted")
 			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 
 		default:
-			log.Error("Failed to authenticate user: ", username)
+			log.WithFields(log.Fields{"authType": "cega"}).Error("Failed to authenticate user: ", username)
 			s.SetFlash("message", "Provided credentials are not valid")
 			ctx.Redirect("/ega/login", iris.StatusSeeOther)
 		}
@@ -168,7 +168,7 @@ func main() {
 		idStruct, err := authenticateWithOidc(oauth2Config, provider, code)
 
 		if err != nil {
-			log.Error(err)
+			log.WithFields(log.Fields{"authType": "elixir"}).Errorf("Auhentication failed: %s", err)
 			_, err := ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
 			if err != nil {
 				log.Error("Failed to write response: ", err)
@@ -176,7 +176,7 @@ func main() {
 			}
 			return
 		}
-		log.Infof("User was authenticated: %s", idStruct.User)
+		log.WithFields(log.Fields{"authType": "elixir"}).Infof("User was authenticated: %s", idStruct.User)
 		err = ctx.View("elixir.html", idStruct)
 		if err != nil {
 			log.Error("Failed to view login form: ", err)
