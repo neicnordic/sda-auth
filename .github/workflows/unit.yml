@@ -28,4 +28,4 @@ jobs:
     - name: Start virtual infrastructure
       run: docker-compose -f ./dev-server/docker-compose.yml up -d --force-recreate --build
     - name: Run unit tests
-      run: tox -e unit_tests
+      run: tox -e unit_tests -c tests/tox.ini

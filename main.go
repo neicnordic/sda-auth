@@ -31,7 +31,11 @@ func main() {
 	app.HandleDir("/public", iris.Dir("./frontend/static"))
 
 	app.Get("/", func(ctx iris.Context) {
-		ctx.View("index.html")
+		err := ctx.View("index.html")
+		if err != nil {
+			log.Error("Failed to view index page: ", err)
+			return
+		}
 	})
 
 	app.Post("/ega", func(ctx iris.Context) {

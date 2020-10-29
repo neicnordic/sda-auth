@@ -8,14 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	requiredConfVars = []string{
-		"elixir.id", "elixir.issuer", "elixir.redirectUrl", "elixir.secret", "elixir.scope",
-		"cega.authUrl", "cega.id", "cega.jwtIssuer", "cega.jwtPrivateKey", "cega.jwtSignatureAlg",
-		"cega.secret", "s3Inbox",
-	}
-)
-
 // ElixirConfig stores the config about the elixir oidc endpoint
 type ElixirConfig struct {
 	id          string
