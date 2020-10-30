@@ -12,12 +12,12 @@ Parameter | Description | Defined value
 `ELIXIR_ID` | Elixir authentication id | `XC56EL11xx`
 `ELIXIR_SECRET` | Elixir authentication secret | `wHPVQaYXmdDHg`
 `ELIXIR_ISSUER` | Elixir issuer URL | `http://oidc:9090`
-`ELIXIR_SCOPE` | Elixir OIDC scopes, separated by space. You may choose "openid ga4gh_passport_v1" | `ga4gh_passport_v1`
+`ELIXIR_SCOPE` | Additional OIDC scope | `ga4gh_passport_v1`
 `CEGA_AUTHURL` | CEGA server endpoint | `http://cega:8443/lega/v1/legas/users/`
 `CEGA_ID` | CEGA server authentication id | `dummy`
 `CEGA_SECRET` | CEGA server authentication secret | `dummy`
 `CEGA_JWTPRIVATEKEY` | Path to private key for signing the JWT token | `keys/sign-jwt.key`
-`CEGA_JWTSIGNATUREALG` | Algorithm used to sign the JWT token. ES (ECDSA) and RS (RSA) are common choices | `ES256`
+`CEGA_JWTSIGNATUREALG` | Algorithm used to sign the JWT token. ES256 (ECDSA) or RS256 (RSA) are supported | `ES256`
 `CEGA_JWTISSUER` | Issuer of CEGA JWT tokens | `http://auth:8080`
 `SERVER_CERT` | Certificate file path | `""`
 `SERVER_KEY` | Private key file path | `""`
