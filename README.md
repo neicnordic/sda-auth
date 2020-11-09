@@ -21,7 +21,7 @@ Parameter | Description | Defined value
 `CEGA_JWTISSUER` | Issuer of CEGA JWT tokens | `http://auth:8080`
 `SERVER_CERT` | Certificate file path | `""`
 `SERVER_KEY` | Private key file path | `""`
-`S3INBOX` | S3 inbox host | `inbox.ega.nbis.se`
+`S3INBOX` | S3 inbox host | `s3.example.com`
 
 ## Running the development setup
 
