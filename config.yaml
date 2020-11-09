@@ -18,4 +18,4 @@ cega:
 server:
   cert: "keys/cert.pem"
   key: "keys/key.pem"
-s3Inbox: "inbox.ega.nbis.se"
+s3Inbox: "s3.example.com"
