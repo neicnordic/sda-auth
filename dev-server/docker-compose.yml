@@ -52,7 +52,7 @@ services:
       - CEGA_JWTSIGNATUREALG=ES256
       - CEGA_SECRET=dummy
       - LOG_LEVEL=info
-      - S3INBOX=inbox.ega.nbis.se
+      - S3INBOX=s3.example.com
     volumes:
       - ../keys:/keys
       - ../:/sda-auth
