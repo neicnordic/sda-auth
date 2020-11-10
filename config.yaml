@@ -1,0 +1,21 @@
+---
+log:
+  level: "info"
+elixir:
+  id: "XC56EL11xx"
+  issuer: "http://oidc:9090"
+  redirectUri: "http://oidc:31111/elixir/login"
+  revocationUrl: "http://oidc:9090"
+  secret: "wHPVQaYXmdDHg"
+  scope: "ga4gh_passport_v1"
+cega:
+  authUrl: "http://cega:8443/lega/v1/legas/users/"
+  id: "dummy"
+  jwtIssuer: "http://auth:8080"
+  jwtPrivateKey: "keys/sign-jwt.key"
+  jwtSignatureAlg: "ES256"
+  secret: "dummy"
+server:
+  cert: "keys/cert.pem"
+  key: "keys/key.pem"
+s3Inbox: "s3.example.com"
