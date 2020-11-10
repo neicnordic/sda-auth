@@ -1,4 +1,4 @@
-FROM golang:1.14.9-alpine3.12
+FROM golang:1.15.4-alpine3.12
 RUN apk add --no-cache git
 COPY . .
 ENV GO111MODULE=on
