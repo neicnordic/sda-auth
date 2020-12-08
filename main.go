@@ -13,6 +13,30 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func getInboxConfig(ctx iris.Context, authType string) {
+	s := sessions.Get(ctx)
+	s3conf := s.GetFlash(authType)
+	if s3conf == nil {
+		ctx.Redirect("/")
+		return
+	}
+	s3cfmap := s3conf.(map[string]string)
+	ctx.ResponseWriter().Header().Set("Content-Disposition", "attachment; filename=s3cmd.conf")
+	var s3c string
+
+	for k, v := range s3cfmap {
+		entry := fmt.Sprintf("%s = %s\n", k, v)
+		s3c = s3c + entry
+	}
+
+	_, err := io.Copy(ctx.ResponseWriter(), strings.NewReader(s3c))
+	if err != nil {
+		log.Error("Failed to write s3config response: ", err)
+		return
+	}
+
+}
+
 func main() {
 	// Initialise config
 	config := NewConfig()
@@ -73,11 +97,11 @@ func main() {
 			ok := verifyPassword(password, hash)
 
 			if ok {
-				log.WithFields(log.Fields{"authType": "cega"}).Info("Valid password entered by user: ", username)
+				log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
 				token := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
 				s3conf := getS3ConfigMap(token, config.S3Inbox, username)
 				idStruct := EGAIdentity{User: username, Token: token}
-				s.SetFlash("s3conf", s3conf)
+				s.SetFlash("ega", s3conf)
 				err := ctx.View("ega.html", idStruct)
 				if err != nil {
 					log.Error("Failed to parse response: ", err)
@@ -103,27 +127,7 @@ func main() {
 	})
 
 	app.Get("/ega/s3conf", func(ctx iris.Context) {
-		s := sessions.Get(ctx)
-		s3conf := s.GetFlash("s3conf")
-		if s3conf == nil {
-			ctx.Redirect("/")
-			return
-		}
-		s3cfmap := s3conf.(map[string]string)
-		ctx.ResponseWriter().Header().Set("Content-Disposition", "attachment; filename=s3cmd.conf")
-		var s3c string
-
-		for k, v := range s3cfmap {
-			entry := fmt.Sprintf("%s = %s\n", k, v)
-			s3c = s3c + entry
-		}
-
-		_, err := io.Copy(ctx.ResponseWriter(), strings.NewReader(s3c))
-		if err != nil {
-			log.Error("Failed to write s3config response: ", err)
-			return
-		}
-
+		getInboxConfig(ctx, "ega")
 	})
 
 	app.Get("/ega/login", func(ctx iris.Context) {
@@ -148,6 +152,10 @@ func main() {
 		state := uuid.New()
 		ctx.SetCookie(&http.Cookie{Name: "state", Value: state.String(), Secure: true})
 		ctx.Redirect(oauth2Config.AuthCodeURL(state.String()))
+	})
+
+	app.Get("/elixir/s3conf", func(ctx iris.Context) {
+		getInboxConfig(ctx, "elixir")
 	})
 
 	app.Get("/elixir/login", func(ctx iris.Context) {
@@ -177,6 +185,9 @@ func main() {
 			return
 		}
 		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
+		s3conf := getS3ConfigMap(idStruct.Token, config.S3Inbox, idStruct.User)
+		s := sessions.Get(ctx)
+		s.SetFlash("elixir", s3conf)
 		err = ctx.View("elixir.html", idStruct)
 		if err != nil {
 			log.Error("Failed to view login form: ", err)
