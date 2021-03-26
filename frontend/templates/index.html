@@ -31,24 +31,27 @@
         <h3>SDA authentication service</h3>
       </div>
     </div>
-    <div class="row">
-        <div class="col-sm py-3">
-          <p class="lead">
-            For logging in with Elixir please click here:
-          </p>
-          <a class="btn btn-primary btn-lg btn-block" href="/elixir">Log in with Elixir</a>
-        </div>
-        <div class="col-sm py-3">
-          <p class="lead">
-            For logging in with EGA please click here:
-          </p>
-          <a class="btn btn-primary btn-lg btn-block" href="/ega/login">Log in with EGA</a>
-        </div>
-    </div>
+    <div class="row" id="login-options"></div>
   </div>
 </div>
     <script src="public/jquery-3.5.1.min.js"></script>
     <script src="public/bootstrap.min.js"></script>
+    <script>
+      $.get('/login-options', (options) => {
+        options.forEach(option => {
+        $("#login-options").append(
+          `<div class="col-sm py-3">
+            <p class="lead">
+              For logging in with ${option.Name} please click here:
+            </p>
+            <a class="btn btn-primary btn-lg btn-block" href="${option.URL}">
+              Log in with ${option.Name}
+            </a>
+          </div>
+          `);
+        });
+      });
+    </script>
 </body>
 </html>
 
