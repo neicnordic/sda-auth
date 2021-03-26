@@ -160,7 +160,11 @@ func main() {
 		if config.Cega.id != "" && config.Cega.secret != "" {
 			response = append(response, LoginOption{Name: "EGA", URL: "/ega/login"})
 		}
-		ctx.JSON(response)
+		_, err := ctx.JSON(response)
+		if err != nil {
+			log.Error("Failed to create JSON login options: ", err)
+			return
+		}
 	})
 
 	app.Get("/elixir", func(ctx iris.Context) {
