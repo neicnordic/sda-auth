@@ -13,6 +13,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type LoginOption struct {
+	Name string
+	URL  string
+}
+
 func getInboxConfig(ctx iris.Context, authType string) {
 	s := sessions.Get(ctx)
 	s3conf := s.GetFlash(authType)
@@ -144,6 +149,20 @@ func main() {
 		err := ctx.View("loginform.html", EGALoginError{Reason: message})
 		if err != nil {
 			log.Error("Failed to view invalid credentials form: ", err)
+			return
+		}
+	})
+
+	app.Get("/login-options", func(ctx iris.Context) {
+		// Elixir is always available
+		response := []LoginOption{{Name: "Elixir", URL: "/elixir"}}
+		// Only add the CEGA option if it has both id and secret
+		if config.Cega.id != "" && config.Cega.secret != "" {
+			response = append(response, LoginOption{Name: "EGA", URL: "/ega/login"})
+		}
+		_, err := ctx.JSON(response)
+		if err != nil {
+			log.Error("Failed to create JSON login options: ", err)
 			return
 		}
 	})
