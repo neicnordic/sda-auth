@@ -3,7 +3,8 @@ const camelCase = require('camelcase');
 const Provider = require('oidc-provider');
 
 const port = process.env.PORT || 3000;
-const ext_port = process.env.EXTERNAL_PORT || process.env.PORT;
+// External port can legally be an empty string
+const ext_port = process.env.EXTERNAL_PORT ?? process.env.PORT;
 const host = process.env.HOST || "oidc" ;
 
 const config = ['CLIENT_ID', 'CLIENT_SECRET', 'CLIENT_REDIRECT_URI'].reduce((acc, v) => {
@@ -59,7 +60,7 @@ const oidcConfig = {
 
 };
 
-const oidc = new Provider(`http://${host}:${ext_port}`, oidcConfig);
+const oidc = new Provider(`http://${host}${ext_port ? ':' : ''}${ext_port}`, oidcConfig);
 
 const clients= [{
     client_id: config.clientId,
