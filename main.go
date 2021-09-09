@@ -193,6 +193,8 @@ func main() {
 
 		code := ctx.Request().URL.Query().Get("code")
 		idStruct, err := authenticateWithOidc(oauth2Config, provider, code)
+		tokenEGA := generateJwtFromElixir(idStruct.Token, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg)
+		idStruct.Token = tokenEGA
 
 		if err != nil {
 			log.WithFields(log.Fields{"authType": "elixir"}).Errorf("Auhentication failed: %s", err)
