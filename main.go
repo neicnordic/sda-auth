@@ -203,7 +203,7 @@ func main() {
 			return
 		}
 
-		tokenEGA, err := generateJwtFromElixir(idStruct.Token, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg)
+		tokenEGA, err := generateJwtFromElixir(idStruct, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg)
 		if err != nil {
 			log.Fatalf("error when generating token: %v", err)
 		}

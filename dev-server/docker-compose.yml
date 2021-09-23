@@ -44,7 +44,7 @@ services:
       - ELIXIR_ID=XC56EL11xx
       - ELIXIR_ISSUER=http://oidc:9090
       - ELIXIR_SECRET=wHPVQaYXmdDHg
-      - ELIXIR_SCOPE=ga4gh_passport_v1
+      - ELIXIR_SCOPE=ga4gh_passport_v1 profile email
       - ELIXIR_JWTPRIVATEKEY=keys/sign-rsa-jwt.key
       - ELIXIR_JWTSIGNATUREALG=RS256
       - CEGA_AUTHURL=http://cega:8443/lega/v1/legas/users/
