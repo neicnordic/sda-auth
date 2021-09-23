@@ -53,7 +53,14 @@ func TestLongLivedToken(t *testing.T) {
 	jwtPrKey := "keys/sign-rsa-jwt.key"
 	jwtSignatureAlg := JWTRSAalg
 	elixirJWT := "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI0ZjdkZjAyNWQzYzhjNmM2NDVhOGJlM2U2ZDQyYjU3ODlmZmM5NTNlQGVsaXhpci1ldXJvcGUub3JnIiwiYXVkIjoiNGU5NDE2YTctMzUxNS00NDdhLWI4NDgtZDRhYzdjYWJhNTdmIiwiYXV0aF90aW1lIjoxNjMxNzkwMTgzLCJraWQiOiJyc2ExIiwiaXNzIjoiaHR0cHM6XC9cL2xvZ2luLmVsaXhpci1jemVjaC5vcmdcL29pZGNcLyIsImV4cCI6MTYzMTc5MDc5NCwiaWF0IjoxNjMxNzkwMTkzLCJqdGkiOiIyN2ZlM2M0Yy1lMTJiLTQ2ZTYtYjlkZC1mMTVlMjg4MDM4ZTEifQ.ecPJN2F3sPhmYZXJS8i3JD93wnzbTq9Ot9P0xCtun8zZJMvyCumWqAyjFgx_kawR2QS9XdS4kC0fOxSrnKP5H_jUWC61OjfdD7acp4nfPrqtYeCm6cYCanUAjdAVA7dS-W8_DC41WlkV-jd22di1Jyystz45HJ-o_xrlCo6BKUa-CsgylyUxWjEta6XTWAw5ZhAedOH2tmDG3S7rNwpEVICjqwPjLL62qmLlXB_ZlhZhWA1oK0rjNZ9GurXt41KcOPuGNvQU1v5_a8qQ_CSTtnhSWFPIw6jBrZ5jkFNj7-vqRDGz2Ae5cvwmm-G7LE9Yo-cbptKa01sOhijTvGq01A"
-	tokenEGA, err := generateJwtFromElixir(elixirJWT, jwtPrKey, jwtSignatureAlg)
+	idStruct := ElixirIdentity{
+		User:     "",
+		Token:    elixirJWT,
+		Passport: nil,
+		Profile:  "Dummy Tester",
+		Email:    "dummy.tester@gs.uu.se",
+	}
+	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, jwtSignatureAlg)
 	assert.Nil(t, err)
 
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
@@ -76,5 +83,14 @@ func TestLongLivedToken(t *testing.T) {
 	if expDate.Before(tenDays) == false || expDate.After(sixDays) == false {
 		t.Error("token expires out of range")
 	}
+
+	if EGAclaims["name"] != idStruct.Profile {
+		t.Error("name of the user is not correct")
+	}
+
+	if EGAclaims["email"] != idStruct.Email {
+		t.Error("email of the user is not correct")
+	}
+
 	defer os.Remove("keys/sign-rsa-jwt.key")
 }
