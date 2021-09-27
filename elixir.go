@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"

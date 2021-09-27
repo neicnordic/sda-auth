@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/likexian/gokit/assert"
 	log "github.com/sirupsen/logrus"
 )
