@@ -8,6 +8,8 @@ elixir:
   revocationUrl: "http://oidc:9090"
   secret: "wHPVQaYXmdDHg"
   scope: "ga4gh_passport_v1"
+  jwtPrivateKey: "keys/sign-rsa-jwt.key"
+  jwtSignatureAlg: "RS256"
 cega:
   authUrl: "http://cega:8443/lega/v1/legas/users/"
   id: "dummy"

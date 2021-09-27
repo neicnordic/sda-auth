@@ -25,6 +25,8 @@ Parameter | Description | Defined value
 
 ## Running the development setup
 
+First, create a RSA private key under the name `sign-rsa-jwt.key` in the folder `keys`.
+
 Start the full stack  bu running docker-compose in the dev-server folder:
 
 ```bash
