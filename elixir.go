@@ -125,6 +125,9 @@ func generateJwtFromElixir(tokenElixir, key, alg string) string {
 	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
 	EGAtoken.Header = token.Header
 	data, err := ioutil.ReadFile(key)
+	if err != nil {
+		log.Fatal(err, data)
+	}
 
 	switch alg {
 	case "ES256":
@@ -134,7 +137,7 @@ func generateJwtFromElixir(tokenElixir, key, alg string) string {
 		}
 		EGAtokenString, err = token.SignedString(pk)
 		if err != nil {
-			log.Fatal(err, pk)
+			log.Fatal(err, EGAtokenString)
 		}
 	case "RS256":
 		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
@@ -143,17 +146,8 @@ func generateJwtFromElixir(tokenElixir, key, alg string) string {
 		}
 		EGAtokenString, err = token.SignedString(pk)
 		if err != nil {
-			log.Fatal(err, pk)
+			log.Fatal(err, EGAtokenString)
 		}
-	}
-
-	if err != nil {
-		log.Fatal(err, EGAtokenString)
-	}
-
-	// Sign and get the complete encoded token
-	if err != nil {
-		log.Error("Token could not be fetched: ", err)
 	}
 
 	return EGAtokenString

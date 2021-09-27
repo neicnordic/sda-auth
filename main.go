@@ -193,9 +193,6 @@ func main() {
 
 		code := ctx.Request().URL.Query().Get("code")
 		idStruct, err := authenticateWithOidc(oauth2Config, provider, code)
-		tokenEGA := generateJwtFromElixir(idStruct.Token, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg)
-		idStruct.Token = tokenEGA
-
 		if err != nil {
 			log.WithFields(log.Fields{"authType": "elixir"}).Errorf("Auhentication failed: %s", err)
 			_, err := ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
@@ -205,6 +202,10 @@ func main() {
 			}
 			return
 		}
+
+		tokenEGA := generateJwtFromElixir(idStruct.Token, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg)
+		idStruct.Token = tokenEGA
+
 		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 		s3conf := getS3ConfigMap(idStruct.Token, config.S3Inbox, idStruct.User)
 		s := sessions.Get(ctx)
