@@ -107,7 +107,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 }
 
 // Returns long-lived token as string
-func generateJwtFromElixir(tokenElixir, key, alg string) string {
+func generateJwtFromElixir(tokenElixir, key, alg string) (string, error) {
 	var (
 		elixirClaims   jwt.MapClaims
 		EGAtokenString string
@@ -126,29 +126,29 @@ func generateJwtFromElixir(tokenElixir, key, alg string) string {
 	EGAtoken.Header = token.Header
 	data, err := ioutil.ReadFile(key)
 	if err != nil {
-		log.Fatal(err, data)
+		return "", err
 	}
 
 	switch alg {
 	case "ES256":
 		pk, err := jwt.ParseECPrivateKeyFromPEM(data)
 		if err != nil {
-			log.Fatal(err, pk)
+			return "", err
 		}
 		EGAtokenString, err = token.SignedString(pk)
 		if err != nil {
-			log.Fatal(err, EGAtokenString)
+			return "", err
 		}
 	case "RS256":
 		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
 		if err != nil {
-			log.Fatal(err, pk)
+			return "", err
 		}
 		EGAtokenString, err = token.SignedString(pk)
 		if err != nil {
-			log.Fatal(err, EGAtokenString)
+			return "", err
 		}
 	}
 
-	return EGAtokenString
+	return EGAtokenString, nil
 }
