@@ -10,11 +10,13 @@ import (
 
 // ElixirConfig stores the config about the elixir oidc endpoint
 type ElixirConfig struct {
-	id          string
-	issuer      string
-	redirectURL string
-	secret      string
-	scope       string
+	id              string
+	issuer          string
+	redirectURL     string
+	secret          string
+	scope           string
+	jwtPrivateKey   string
+	jwtSignatureAlg string
 }
 
 // CegaConfig stores information about the cega endpoint
@@ -61,6 +63,8 @@ func (c *Config) readConfig() {
 	elixir.redirectURL = viper.GetString("elixir.redirectUrl")
 	elixir.secret = viper.GetString("elixir.secret")
 	elixir.scope = viper.GetString("elixir.scope")
+	elixir.jwtPrivateKey = viper.GetString("elixir.jwtPrivateKey")
+	elixir.jwtSignatureAlg = viper.GetString("elixir.jwtSignatureAlg")
 
 	c.Elixir = elixir
 

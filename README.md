@@ -13,6 +13,8 @@ Parameter | Description | Defined value
 `ELIXIR_SECRET` | Elixir authentication secret | `wHPVQaYXmdDHg`
 `ELIXIR_ISSUER` | Elixir issuer URL | `http://oidc:9090`
 `ELIXIR_SCOPE` | Additional OIDC scope | `ga4gh_passport_v1`
+`ELIXIR_JWTPRIVATEKEY` | Path to private key for signing the JWT token | `keys/sign-rsa-jwt.key`
+`ELIXIR_JWTSIGNATUREALG` | Algorithm used to sign the JWT token. ES256 (ECDSA) or RS256 (RSA) are supported | `RS256`
 `CEGA_AUTHURL` | CEGA server endpoint | `http://cega:8443/lega/v1/legas/users/`
 `CEGA_ID` | CEGA server authentication id | `dummy`
 `CEGA_SECRET` | CEGA server authentication secret | `dummy`
@@ -24,6 +26,8 @@ Parameter | Description | Defined value
 `S3INBOX` | S3 inbox host | `s3.example.com`
 
 ## Running the development setup
+
+First, create a RSA private key under the name `sign-rsa-jwt.key` in the folder `keys`.
 
 Start the full stack  bu running docker-compose in the dev-server folder:
 

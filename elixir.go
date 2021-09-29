@@ -1,9 +1,12 @@
 package main
 
 import (
+	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/golang-jwt/jwt/v4"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -101,4 +104,51 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 
 	return idStruct, err
 
+}
+
+// Returns long-lived token as string
+func generateJwtFromElixir(tokenElixir, key, alg string) (string, error) {
+	var (
+		elixirClaims   jwt.MapClaims
+		EGAtokenString string
+	)
+
+	token, _ := jwt.Parse(tokenElixir, func(tokenElixir *jwt.Token) (interface{}, error) { return nil, nil })
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		elixirClaims = claims
+	} else {
+		log.Error("Claims in token are empty")
+	}
+
+	ttl := 170 * time.Hour
+	elixirClaims["exp"] = time.Now().UTC().Add(ttl).Unix()
+	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
+	EGAtoken.Header = token.Header
+	data, err := ioutil.ReadFile(key)
+	if err != nil {
+		return "", err
+	}
+
+	switch alg {
+	case "ES256":
+		pk, err := jwt.ParseECPrivateKeyFromPEM(data)
+		if err != nil {
+			return "", err
+		}
+		EGAtokenString, err = token.SignedString(pk)
+		if err != nil {
+			return "", err
+		}
+	case "RS256":
+		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
+		if err != nil {
+			return "", err
+		}
+		EGAtokenString, err = token.SignedString(pk)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return EGAtokenString, nil
 }
