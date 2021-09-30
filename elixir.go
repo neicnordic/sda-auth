@@ -17,6 +17,8 @@ type ElixirIdentity struct {
 	User     string
 	Passport []string
 	Token    string
+	Profile  string
+	Email    string
 }
 
 // Configure an OpenID Connect aware OAuth2 client.
@@ -87,12 +89,14 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 		return idStruct, err
 	}
 
-	// Extract custom ga4gh_passport_v1 claim
+	// Extract custom passports, name and email claims
 	var claims struct {
 		PassportClaim []string `json:"ga4gh_passport_v1"`
+		ProfileClaim  string   `json:"name"`
+		EmailClaim    string   `json:"email"`
 	}
 	if err := userInfo.Claims(&claims); err != nil {
-		log.Error("Failed to get custom ga4gh_passport_v1 claim")
+		log.Error("Failed to get custom claims")
 		return idStruct, err
 	}
 
@@ -100,6 +104,8 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 		User:     removeHost(userInfo.Subject),
 		Token:    rawIDToken,
 		Passport: claims.PassportClaim,
+		Profile:  claims.ProfileClaim,
+		Email:    claims.EmailClaim,
 	}
 
 	return idStruct, err
@@ -107,13 +113,13 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 }
 
 // Returns long-lived token as string
-func generateJwtFromElixir(tokenElixir, key, alg string) (string, error) {
+func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, error) {
 	var (
 		elixirClaims   jwt.MapClaims
 		EGAtokenString string
 	)
 
-	token, _ := jwt.Parse(tokenElixir, func(tokenElixir *jwt.Token) (interface{}, error) { return nil, nil })
+	token, _ := jwt.Parse(idStruct.Token, func(tokenElixir *jwt.Token) (interface{}, error) { return nil, nil })
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		elixirClaims = claims
 	} else {
@@ -122,6 +128,8 @@ func generateJwtFromElixir(tokenElixir, key, alg string) (string, error) {
 
 	ttl := 170 * time.Hour
 	elixirClaims["exp"] = time.Now().UTC().Add(ttl).Unix()
+	elixirClaims["name"] = idStruct.Profile
+	elixirClaims["email"] = idStruct.Email
 	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
 	EGAtoken.Header = token.Header
 	data, err := ioutil.ReadFile(key)

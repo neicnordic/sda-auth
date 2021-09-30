@@ -38,6 +38,8 @@ const oidcConfig = {
    scopes: [
      'openid',
      'ga4gh_passport_v1',
+     'profile',
+     'email',
      'offline_access'
    ],
     claims: {
@@ -46,14 +48,15 @@ const oidcConfig = {
       ga4gh_passport_v1: ['ga4gh_passport_v1'],
       auth_time: null,
       ss: null,
-      openid: [ 'sub' ]
+      openid: [ 'sub' ],
+      profile: ['name', 'email']
       },
 
   findById: async function findById(ctx, sub, token) {
     return {
       accountId: sub,
       async claims(use, scope, claims, rejected) {
-        return { sub, ga4gh_passport_v1: ['eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwIiwibmFtZSI6InRlc3QiLCJnYTRnaF92aXNhX3YxIjp7ImFzc2VydGVkIjoxLCJieSI6InN5c3RlbSIsInNvdXJjZSI6Imh0dHA6Ly93d3cudXUuc2UvZW4vIiwidHlwZSI6IkFmZmlsaWF0aW9uQW5kUm9sZSIsInZhbHVlIjoic3RhZmZAdXUuc2UifSwiYWRtaW4iOnRydWUsImp0aSI6InRlc3QiLCJpYXQiOjE1ODQ4OTc4NDIsImV4cCI6MTU4NDkwMTQ0Mn0.RkAULuJEaExt0zVu3_uE2BSdkHLAHRD8owqhrsrTfLI'] };
+        return { name: 'Dummy Tester', email:'dummy.tester@gs.uu.se', sub, ga4gh_passport_v1: ['eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwIiwibmFtZSI6InRlc3QiLCJnYTRnaF92aXNhX3YxIjp7ImFzc2VydGVkIjoxLCJieSI6InN5c3RlbSIsInNvdXJjZSI6Imh0dHA6Ly93d3cudXUuc2UvZW4vIiwidHlwZSI6IkFmZmlsaWF0aW9uQW5kUm9sZSIsInZhbHVlIjoic3RhZmZAdXUuc2UifSwiYWRtaW4iOnRydWUsImp0aSI6InRlc3QiLCJpYXQiOjE1ODQ4OTc4NDIsImV4cCI6MTU4NDkwMTQ0Mn0.RkAULuJEaExt0zVu3_uE2BSdkHLAHRD8owqhrsrTfLI'] };
       },
     };
   },
