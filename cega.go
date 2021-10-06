@@ -56,8 +56,8 @@ func generateJwtToken(issuer, sub, key, alg string) string {
 	// Create a new token object by specifying signing method and the needed claims
 
 	ttl := 200 * time.Hour
-	token := jwt.NewWithClaims(jwt.GetSigningMethod(alg), &jwt.StandardClaims{
-		ExpiresAt: time.Now().UTC().Add(ttl).Unix(),
+	token := jwt.NewWithClaims(jwt.GetSigningMethod(alg), &jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(ttl)),
 		Issuer:    issuer,
 		Subject:   sub,
 	})
