@@ -12,9 +12,9 @@ require (
 	github.com/likexian/gokit v0.25.6
 	github.com/pquerna/cachecontrol v0.0.0-20201205024021-ac21108117ac // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/viper v1.9.0
+	github.com/spf13/viper v1.10.0
 	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
 	golang.org/x/net v0.0.0-20211201190559-0a0e4e1bb54c
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 )
