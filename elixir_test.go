@@ -62,7 +62,7 @@ func TestRSA(t *testing.T) {
 		Profile:  "Dummy Tester",
 		Email:    "dummy.tester@gs.uu.se",
 	}
-	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, jwtSignatureAlg)
+	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, jwtSignatureAlg, "http://test.login.org/elixir/login")
 	assert.Nil(t, err)
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
@@ -124,7 +124,7 @@ func TestEC(t *testing.T) {
 		Profile:  "Dummy Tester",
 		Email:    "dummy.tester@gs.uu.se",
 	}
-	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, JWTalg)
+	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, JWTalg, "http://test.login.org/elixir/login")
 	assert.Nil(t, err)
 
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
