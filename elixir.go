@@ -132,16 +132,18 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 		if err != nil {
 		return "", fmt.Errorf("failed to pars ISS, reason: %v", err)
 	}
+
+	data, err := ioutil.ReadFile(key)
+	if err != nil {
+		return "", err
+	}
+
 	ttl := 170 * time.Hour
 	elixirClaims["exp"] = time.Now().UTC().Add(ttl).Unix()
 	elixirClaims["name"] = idStruct.Profile
 	elixirClaims["email"] = idStruct.Email
 	elixirClaims["iss"] = fmt.Sprintf("%s://%s",u.Scheme, u.Host)
 	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
-	data, err := ioutil.ReadFile(key)
-	if err != nil {
-		return "", err
-	}
 
 	switch alg {
 	case "ES256":
