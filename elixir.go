@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -143,6 +144,7 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 	elixirClaims["name"] = idStruct.Profile
 	elixirClaims["email"] = idStruct.Email
 	elixirClaims["iss"] = fmt.Sprintf("%s://%s",u.Scheme, u.Host)
+	elixirClaims["kid"] = fmt.Sprintf("%x", sha256.Sum256(data))
 	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
 
 	switch alg {
