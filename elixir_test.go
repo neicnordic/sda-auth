@@ -15,7 +15,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/likexian/gokit/assert"
-	log "github.com/sirupsen/logrus"
 )
 
 // These are not complete tests of all functions in elixir. New tests should
@@ -65,33 +64,18 @@ func TestRSA(t *testing.T) {
 	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, jwtSignatureAlg, "http://test.login.org/elixir/login")
 	assert.Nil(t, err)
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		EGAclaims = claims
-	} else {
-		log.Error("Claims in token are empty")
-	}
-
+	EGAclaims, ok := token.Claims.(jwt.MapClaims)
+	assert.True(t, ok)
+	
 	expDateStr := fmt.Sprintf("%.0f", EGAclaims["exp"])
 	expDateInt, err := strconv.ParseInt(expDateStr, 10, 64)
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
 
-	expDate := time.Unix(expDateInt, 0)
-	tenDays := time.Now().UTC().Add(240 * time.Hour)
-	sixDays := time.Now().Add(144 * time.Hour)
+	assert.Equal(t, expDateInt, time.Now().Add(170 * time.Hour).Unix())
 
-	if expDate.Before(tenDays) == false || expDate.After(sixDays) == false {
-		t.Error("token expires out of range")
-	}
+	assert.Equal(t, idStruct.Profile, EGAclaims["name"])
 
-	if EGAclaims["name"] != idStruct.Profile {
-		t.Error("name of the user is not correct")
-	}
-
-	if EGAclaims["email"] != idStruct.Email {
-		t.Error("email of the user is not correct")
-	}
+	assert.Equal(t, idStruct.Email, EGAclaims["email"])
 
 	defer os.Remove("keys/sign-rsa-jwt.key")
 }
@@ -128,33 +112,18 @@ func TestEC(t *testing.T) {
 	assert.Nil(t, err)
 
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		EGAclaims = claims
-	} else {
-		log.Error("Claims in token are empty")
-	}
+	EGAclaims, ok := token.Claims.(jwt.MapClaims)
+	assert.True(t, ok)
 
 	expDateStr := fmt.Sprintf("%.0f", EGAclaims["exp"])
 	expDateInt, err := strconv.ParseInt(expDateStr, 10, 64)
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
 
-	expDate := time.Unix(expDateInt, 0)
-	tenDays := time.Now().UTC().Add(240 * time.Hour)
-	sixDays := time.Now().Add(144 * time.Hour)
+	assert.Equal(t, expDateInt, time.Now().Add(170 * time.Hour).Unix())
 
-	if expDate.Before(tenDays) == false || expDate.After(sixDays) == false {
-		t.Error("token expires out of range")
-	}
+	assert.Equal(t, idStruct.Profile, EGAclaims["name"])
 
-	if EGAclaims["name"] != idStruct.Profile {
-		t.Error("name of the user is not correct")
-	}
-
-	if EGAclaims["email"] != idStruct.Email {
-		t.Error("email of the user is not correct")
-	}
+	assert.Equal(t, idStruct.Email, EGAclaims["email"])
 
 	defer os.Remove("keys/sign-ecdsa-jwt.key")
 }
