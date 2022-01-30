@@ -131,7 +131,6 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, er
 	elixirClaims["name"] = idStruct.Profile
 	elixirClaims["email"] = idStruct.Email
 	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
-	EGAtoken.Header = token.Header
 	data, err := ioutil.ReadFile(key)
 	if err != nil {
 		return "", err
