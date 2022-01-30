@@ -32,7 +32,7 @@ func TestRemoveHost(t *testing.T) {
 	}
 }
 
-func TestLongLivedToken(t *testing.T) {
+func TestRSA(t *testing.T) {
 	var (
 		EGAclaims jwt.MapClaims
 		JWTRSAalg = "RS256"
