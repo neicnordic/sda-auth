@@ -142,7 +142,7 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, er
 		if err != nil {
 			return "", err
 		}
-		EGAtokenString, err = token.SignedString(pk)
+		EGAtokenString, err = EGAtoken.SignedString(pk)
 		if err != nil {
 			return "", err
 		}
@@ -151,7 +151,7 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, er
 		if err != nil {
 			return "", err
 		}
-		EGAtokenString, err = token.SignedString(pk)
+		EGAtokenString, err = EGAtoken.SignedString(pk)
 		if err != nil {
 			return "", err
 		}
