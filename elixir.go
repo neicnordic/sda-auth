@@ -131,7 +131,7 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 
 	u, err := url.Parse(iss)
 		if err != nil {
-		return "", fmt.Errorf("failed to pars ISS, reason: %v", err)
+		return "", fmt.Errorf("failed to parse ISS (jwt issuer field), %v", err)
 	}
 
 	data, err := ioutil.ReadFile(key)
