@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strings"
 	"time"
 
@@ -113,7 +116,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 }
 
 // Returns long-lived token as string
-func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, error) {
+func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (string, error) {
 	var (
 		elixirClaims   jwt.MapClaims
 		EGAtokenString string
@@ -126,16 +129,23 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, er
 		log.Error("Claims in token are empty")
 	}
 
-	ttl := 170 * time.Hour
-	elixirClaims["exp"] = time.Now().UTC().Add(ttl).Unix()
-	elixirClaims["name"] = idStruct.Profile
-	elixirClaims["email"] = idStruct.Email
-	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
-	EGAtoken.Header = token.Header
+	u, err := url.Parse(iss)
+		if err != nil {
+		return "", fmt.Errorf("failed to parse ISS (jwt issuer field), %v", err)
+	}
+
 	data, err := ioutil.ReadFile(key)
 	if err != nil {
 		return "", err
 	}
+
+	ttl := 170 * time.Hour
+	elixirClaims["exp"] = time.Now().UTC().Add(ttl).Unix()
+	elixirClaims["name"] = idStruct.Profile
+	elixirClaims["email"] = idStruct.Email
+	elixirClaims["iss"] = fmt.Sprintf("%s://%s",u.Scheme, u.Host)
+	elixirClaims["kid"] = fmt.Sprintf("%x", sha256.Sum256(data))
+	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
 
 	switch alg {
 	case "ES256":
@@ -143,7 +153,7 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, er
 		if err != nil {
 			return "", err
 		}
-		EGAtokenString, err = token.SignedString(pk)
+		EGAtokenString, err = EGAtoken.SignedString(pk)
 		if err != nil {
 			return "", err
 		}
@@ -152,7 +162,7 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg string) (string, er
 		if err != nil {
 			return "", err
 		}
-		EGAtokenString, err = token.SignedString(pk)
+		EGAtokenString, err = EGAtoken.SignedString(pk)
 		if err != nil {
 			return "", err
 		}
