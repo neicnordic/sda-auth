@@ -22,6 +22,7 @@ type ElixirIdentity struct {
 	Token    string
 	Profile  string
 	Email    string
+	ExpDate  string
 }
 
 // Configure an OpenID Connect aware OAuth2 client.

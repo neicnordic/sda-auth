@@ -208,6 +208,7 @@ func main() {
 			log.Fatalf("error when generating token: %v", err)
 		}
 		idStruct.Token = tokenEGA
+		idStruct.ExpDate = expDate
 
 		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 		s3conf := getS3ConfigMap(idStruct.Token, config.S3Inbox, idStruct.User)
