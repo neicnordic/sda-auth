@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/golang-jwt/jwt/v4 v4.2.0
+	github.com/golang-jwt/jwt/v4 v4.3.0
 	github.com/google/uuid v1.3.0
 	github.com/kataras/iris/v12 v12.2.0-alpha5
 	github.com/likexian/gokit v0.25.6
