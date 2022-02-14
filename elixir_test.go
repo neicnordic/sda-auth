@@ -61,17 +61,17 @@ func TestRSA(t *testing.T) {
 		Profile:  "Dummy Tester",
 		Email:    "dummy.tester@gs.uu.se",
 	}
-	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, jwtSignatureAlg, "http://test.login.org/elixir/login")
+	tokenEGA, _, err := generateJwtFromElixir(idStruct, jwtPrKey, jwtSignatureAlg, "http://test.login.org/elixir/login")
 	assert.Nil(t, err)
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
 	EGAclaims, ok := token.Claims.(jwt.MapClaims)
 	assert.True(t, ok)
-	
+
 	expDateStr := fmt.Sprintf("%.0f", EGAclaims["exp"])
 	expDateInt, err := strconv.ParseInt(expDateStr, 10, 64)
 	assert.Nil(t, err)
 
-	assert.Equal(t, expDateInt, time.Now().Add(170 * time.Hour).Unix())
+	assert.Equal(t, expDateInt, time.Now().Add(170*time.Hour).Unix())
 
 	assert.Equal(t, idStruct.Profile, EGAclaims["name"])
 
@@ -83,7 +83,7 @@ func TestRSA(t *testing.T) {
 func TestEC(t *testing.T) {
 	var (
 		EGAclaims jwt.MapClaims
-		JWTalg = "ES256"
+		JWTalg    = "ES256"
 	)
 	// Create ECDSA private key on the fly
 	privatekey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -108,7 +108,7 @@ func TestEC(t *testing.T) {
 		Profile:  "Dummy Tester",
 		Email:    "dummy.tester@gs.uu.se",
 	}
-	tokenEGA, err := generateJwtFromElixir(idStruct, jwtPrKey, JWTalg, "http://test.login.org/elixir/login")
+	tokenEGA, _, err := generateJwtFromElixir(idStruct, jwtPrKey, JWTalg, "http://test.login.org/elixir/login")
 	assert.Nil(t, err)
 
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
@@ -119,7 +119,7 @@ func TestEC(t *testing.T) {
 	expDateInt, err := strconv.ParseInt(expDateStr, 10, 64)
 	assert.Nil(t, err)
 
-	assert.Equal(t, expDateInt, time.Now().Add(170 * time.Hour).Unix())
+	assert.Equal(t, expDateInt, time.Now().Add(170*time.Hour).Unix())
 
 	assert.Equal(t, idStruct.Profile, EGAclaims["name"])
 
