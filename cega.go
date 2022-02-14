@@ -35,8 +35,9 @@ type CegaUserInfo struct {
 
 // EGAIdentity represents an EGA user instance
 type EGAIdentity struct {
-	User  string
-	Token string
+	User    string
+	Token   string
+	ExpDate string
 }
 
 // Return base64 encoded credentials for basic auth
@@ -52,12 +53,13 @@ func verifyPassword(password, hash string) bool {
 }
 
 // Return base64 encoded credentials for basic auth
-func generateJwtToken(issuer, sub, key, alg string) string {
+func generateJwtToken(issuer, sub, key, alg string) (string, string) {
 	// Create a new token object by specifying signing method and the needed claims
 
 	ttl := 200 * time.Hour
+	expireDate := time.Now().UTC().Add(ttl)
 	token := jwt.NewWithClaims(jwt.GetSigningMethod(alg), &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(ttl)),
+		ExpiresAt: jwt.NewNumericDate(expireDate),
 		Issuer:    issuer,
 		Subject:   sub,
 	})
@@ -92,7 +94,7 @@ func generateJwtToken(issuer, sub, key, alg string) string {
 	if err != nil {
 		log.Error("Token could not be fetched: ", err)
 	}
-	return tokenString
+	return tokenString, expireDate.Format("2006-01-02 15:04:05")
 }
 
 // Authenticate against CEGA

@@ -103,9 +103,9 @@ func main() {
 
 			if ok {
 				log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
-				token := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
+				token, expDate := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
 				s3conf := getS3ConfigMap(token, config.S3Inbox, username)
-				idStruct := EGAIdentity{User: username, Token: token}
+				idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 				s.SetFlash("ega", s3conf)
 				err := ctx.View("ega.html", idStruct)
 				if err != nil {
