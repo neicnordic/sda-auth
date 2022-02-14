@@ -35,6 +35,12 @@
             </p>
             <pre class="border border-secondary rounded py-2 px-3 my-4" style="user-select: all;">{{.Token}}</pre>
             {{end}}
+            {{if .ExpDate}}
+            <p class="text-center">
+              Your access token expires (UTC):
+            </p>
+            <pre class="text-center" style="user-select: all;">{{.ExpDate}}</pre>
+            {{end}}
             <a href="/ega/s3conf" class="btn btn-primary btn-block">Download inbox s3cmd credentials</a>
             <a href="/" class="btn btn-primary btn-block">Continue</a>
       </div>
