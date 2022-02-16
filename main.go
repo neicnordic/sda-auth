@@ -103,9 +103,9 @@ func main() {
 
 			if ok {
 				log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
-				token := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
+				token, expDate := generateJwtToken(config.Cega.jwtIssuer, username, config.Cega.jwtPrivateKey, config.Cega.jwtSignatureAlg)
 				s3conf := getS3ConfigMap(token, config.S3Inbox, username)
-				idStruct := EGAIdentity{User: username, Token: token}
+				idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 				s.SetFlash("ega", s3conf)
 				err := ctx.View("ega.html", idStruct)
 				if err != nil {
@@ -203,11 +203,12 @@ func main() {
 			return
 		}
 
-		tokenEGA, err := generateJwtFromElixir(idStruct, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg, config.Elixir.redirectURL)
+		tokenEGA, expDate, err := generateJwtFromElixir(idStruct, config.Elixir.jwtPrivateKey, config.Elixir.jwtSignatureAlg, config.Elixir.redirectURL)
 		if err != nil {
 			log.Fatalf("error when generating token: %v", err)
 		}
 		idStruct.Token = tokenEGA
+		idStruct.ExpDate = expDate
 
 		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 		s3conf := getS3ConfigMap(idStruct.Token, config.S3Inbox, idStruct.User)

@@ -22,6 +22,7 @@ type ElixirIdentity struct {
 	Token    string
 	Profile  string
 	Email    string
+	ExpDate  string
 }
 
 // Configure an OpenID Connect aware OAuth2 client.
@@ -115,8 +116,8 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 
 }
 
-// Returns long-lived token as string
-func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (string, error) {
+// Returns long-lived token and expiration date as strings
+func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (string, string, error) {
 	var (
 		elixirClaims   jwt.MapClaims
 		EGAtokenString string
@@ -130,20 +131,21 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 	}
 
 	u, err := url.Parse(iss)
-		if err != nil {
-		return "", fmt.Errorf("failed to parse ISS (jwt issuer field), %v", err)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse ISS (jwt issuer field), %v", err)
 	}
 
 	data, err := ioutil.ReadFile(key)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	ttl := 170 * time.Hour
-	elixirClaims["exp"] = time.Now().UTC().Add(ttl).Unix()
+	dateDuration := time.Now().UTC().Add(ttl)
+	elixirClaims["exp"] = dateDuration.Unix()
 	elixirClaims["name"] = idStruct.Profile
 	elixirClaims["email"] = idStruct.Email
-	elixirClaims["iss"] = fmt.Sprintf("%s://%s",u.Scheme, u.Host)
+	elixirClaims["iss"] = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 	elixirClaims["kid"] = fmt.Sprintf("%x", sha256.Sum256(data))
 	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
 
@@ -151,22 +153,22 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 	case "ES256":
 		pk, err := jwt.ParseECPrivateKeyFromPEM(data)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		EGAtokenString, err = EGAtoken.SignedString(pk)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 	case "RS256":
 		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		EGAtokenString, err = EGAtoken.SignedString(pk)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 
-	return EGAtokenString, nil
+	return EGAtokenString, dateDuration.Format("2006-01-02 15:04:05"), nil
 }
