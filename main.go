@@ -219,7 +219,9 @@ func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 
 	tokenEGA, expDate, err := generateJwtFromElixir(idStruct, auth.Config.Elixir.jwtPrivateKey, auth.Config.Elixir.jwtSignatureAlg, auth.Config.Elixir.redirectURL)
 	if err != nil {
-		log.Fatalf("error when generating token: %v", err)
+		log.Errorf("error when generating token: %v", err)
+
+		return
 	}
 	idStruct.Token = tokenEGA
 	idStruct.ExpDate = expDate
@@ -242,6 +244,9 @@ func (auth AuthHandler) getElixirConf(ctx iris.Context) {
 }
 
 func main() {
+
+	// Set JSON log formatter
+	log.SetFormatter(&log.JSONFormatter{})
 
 	// Initialise config
 	config := NewConfig()
