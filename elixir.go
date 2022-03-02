@@ -38,7 +38,7 @@ func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 		ClientSecret: conf.secret,
 		RedirectURL:  conf.redirectURL,
 		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, conf.scope},
+		Scopes:       []string{oidc.ScopeOpenID, "ga4gh_passport_v1 profile email"},
 	}
 
 	return oauth2Config, provider

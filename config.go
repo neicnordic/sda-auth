@@ -14,7 +14,6 @@ type ElixirConfig struct {
 	issuer          string
 	redirectURL     string
 	secret          string
-	scope           string
 	jwtPrivateKey   string
 	jwtSignatureAlg string
 }
@@ -62,7 +61,6 @@ func (c *Config) readConfig() {
 	elixir.issuer = viper.GetString("elixir.issuer")
 	elixir.redirectURL = viper.GetString("elixir.redirectUrl")
 	elixir.secret = viper.GetString("elixir.secret")
-	elixir.scope = viper.GetString("elixir.scope")
 	elixir.jwtPrivateKey = viper.GetString("elixir.jwtPrivateKey")
 	elixir.jwtSignatureAlg = viper.GetString("elixir.jwtSignatureAlg")
 
