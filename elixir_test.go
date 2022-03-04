@@ -41,7 +41,7 @@ func TestRSA(t *testing.T) {
 	// Create RSA private key on the fly
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
 	assert.Nil(t, err)
-	var privateKeyBytes []byte = x509.MarshalPKCS1PrivateKey(privatekey)
+	var privateKeyBytes = x509.MarshalPKCS1PrivateKey(privatekey)
 	privateKeyBlock := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: privateKeyBytes,

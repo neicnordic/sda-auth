@@ -43,12 +43,14 @@ type EGAIdentity struct {
 // Return base64 encoded credentials for basic auth
 func getb64Credentials(username, password string) string {
 	creds := username + ":" + password
+
 	return base64.StdEncoding.EncodeToString([]byte(creds))
 }
 
 // Check whether the returned hash corresponds to the given password
 func verifyPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+
 	return err == nil
 }
 
@@ -94,6 +96,7 @@ func generateJwtToken(issuer, sub, key, alg string) (string, string) {
 	if err != nil {
 		log.Error("Token could not be fetched: ", err)
 	}
+
 	return tokenString, expireDate.Format("2006-01-02 15:04:05")
 }
 

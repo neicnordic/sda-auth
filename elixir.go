@@ -38,7 +38,7 @@ func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 		ClientSecret: conf.secret,
 		RedirectURL:  conf.redirectURL,
 		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, conf.scope},
+		Scopes:       []string{oidc.ScopeOpenID, "ga4gh_passport_v1 profile email"},
 	}
 
 	return oauth2Config, provider
@@ -54,6 +54,7 @@ func removeHost(raw string) string {
 	if index > -1 {
 		return raw[:index]
 	}
+
 	return raw
 }
 
@@ -67,6 +68,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	oauth2Token, err := oauth2Config.Exchange(contx, code)
 	if err != nil {
 		log.Error("Failed to fetch oauth2 code")
+
 		return idStruct, err
 	}
 
@@ -74,6 +76,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 	if !ok {
 		log.Error("Failed to extract a valid id token from OAuth2 token")
+
 		return idStruct, err
 	}
 
@@ -83,6 +86,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	_, err = verifier.Verify(contx, rawIDToken)
 	if err != nil {
 		log.Error("Failed to verify id token")
+
 		return idStruct, err
 	}
 
@@ -90,6 +94,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	userInfo, err := provider.UserInfo(contx, oauth2.StaticTokenSource(oauth2Token))
 	if err != nil {
 		log.Error("Failed to get userinfo")
+
 		return idStruct, err
 	}
 
@@ -101,6 +106,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	}
 	if err := userInfo.Claims(&claims); err != nil {
 		log.Error("Failed to get custom claims")
+
 		return idStruct, err
 	}
 
@@ -113,7 +119,6 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	}
 
 	return idStruct, err
-
 }
 
 // Returns long-lived token and expiration date as strings
@@ -132,11 +137,13 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 
 	u, err := url.Parse(iss)
 	if err != nil {
+
 		return "", "", fmt.Errorf("failed to parse ISS (jwt issuer field), %v", err)
 	}
 
 	data, err := ioutil.ReadFile(key)
 	if err != nil {
+
 		return "", "", err
 	}
 
