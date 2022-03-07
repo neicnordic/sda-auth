@@ -71,7 +71,7 @@ func (auth AuthHandler) getLoginOptions(ctx iris.Context) {
 	// Elixir is always available
 	response := []LoginOption{{Name: "Elixir", URL: "/elixir"}}
 	// Only add the CEGA option if it has both id and secret
-	if auth.Config.Cega.id != "" && auth.Config.Cega.secret != "" {
+	if auth.Config.Cega.ID != "" && auth.Config.Cega.Secret != "" {
 		response = append(response, LoginOption{Name: "EGA", URL: "/ega/login"})
 	}
 	_, err := ctx.JSON(response)
@@ -122,7 +122,7 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 
 		if ok {
 			log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
-			token, expDate := generateJwtToken(auth.Config.Cega.jwtIssuer, username, auth.Config.Cega.jwtPrivateKey, auth.Config.Cega.jwtSignatureAlg)
+			token, expDate := generateJwtToken(auth.Config.Cega.JwtIssuer, username, auth.Config.Cega.JwtPrivateKey, auth.Config.Cega.JwtSignatureAlg)
 			s3conf := getS3ConfigMap(token, auth.Config.S3Inbox, username)
 			idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 			s.SetFlash("ega", s3conf)
@@ -284,10 +284,10 @@ func main() {
 	app.Get("/elixir/login", authHandler.getElixirLogin)
 
 	var err error
-	if config.Server.cert != "" && config.Server.key != "" {
+	if config.Server.Cert != "" && config.Server.Key != "" {
 
 		log.Infoln("Serving content using https")
-		err = app.Run(iris.TLS("0.0.0.0:8080", config.Server.cert, config.Server.key))
+		err = app.Run(iris.TLS("0.0.0.0:8080", config.Server.Cert, config.Server.Key))
 	} else {
 
 		log.Infoln("Serving content using http")
