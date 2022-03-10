@@ -245,9 +245,6 @@ func (auth AuthHandler) getElixirConf(ctx iris.Context) {
 
 func main() {
 
-	// Set JSON log formatter
-	log.SetFormatter(&log.JSONFormatter{})
-
 	// Initialise config
 	config := NewConfig()
 

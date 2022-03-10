@@ -1,6 +1,7 @@
 ---
 log:
   level: "info"
+  format: "json"
 elixir:
   id: "XC56EL11xx"
   issuer: "http://oidc:9090"
