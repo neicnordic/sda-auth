@@ -23,6 +23,7 @@ func (suite *S3ConfTests) SetupTest() {}
 
 func (suite *S3ConfTests) TearDownTest() {}
 
+//nolint:goconst
 func (suite *S3ConfTests) TestGetS3ConfigMap() {
 
 	// variable values
