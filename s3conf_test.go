@@ -32,31 +32,31 @@ func (suite *S3ConfTests) TestGetS3ConfigMap() {
 
 	// static values
 
-	check_ssl_certificate := "False"
-	check_ssl_hostname := "False"
+	checkSslCertificate := "False"
+	checkSslHostname := "False"
 	encoding := "UTF-8"
 	encrypt := "False"
-	guess_mime_type := "True"
-	human_readable_sizes := "True"
-	chunk_size := 50
-	use_https := "True"
-	socket_timeout := 30
+	guessMimeType := "True"
+	humanReadableSizes := "True"
+	chunkSize := 50
+	useHTTPS := "True"
+	socketTimeout := 30
 
 	s3conf := getS3ConfigMap(token, inboxHost, user)
 
 	assert.Equal(suite.T(), user, s3conf["access_key"], fmt.Sprintf("access_key should be %v", user))
 	assert.Equal(suite.T(), user, s3conf["secret_key"], fmt.Sprintf("secret_key should be %v", user))
 	assert.Equal(suite.T(), token, s3conf["access_token"], fmt.Sprintf("access_token should be %v", token))
-	assert.Equal(suite.T(), check_ssl_certificate, s3conf["check_ssl_certificate"], fmt.Sprintf("check_ssl_certificate should be %v", check_ssl_certificate))
-	assert.Equal(suite.T(), check_ssl_hostname, s3conf["check_ssl_hostname"], fmt.Sprintf("check_ssl_hostname should be %v", check_ssl_hostname))
+	assert.Equal(suite.T(), checkSslCertificate, s3conf["check_ssl_certificate"], fmt.Sprintf("check_ssl_certificate should be %v", checkSslCertificate))
+	assert.Equal(suite.T(), checkSslHostname, s3conf["check_ssl_hostname"], fmt.Sprintf("check_ssl_hostname should be %v", checkSslHostname))
 	assert.Equal(suite.T(), encoding, s3conf["encoding"], fmt.Sprintf("encoding should be %v", encoding))
 	assert.Equal(suite.T(), encrypt, s3conf["encrypt"], fmt.Sprintf("encrypt should be %v", encrypt))
-	assert.Equal(suite.T(), guess_mime_type, s3conf["guess_mime_type"], fmt.Sprintf("guess_mime_type should be %v", guess_mime_type))
+	assert.Equal(suite.T(), guessMimeType, s3conf["guess_mime_type"], fmt.Sprintf("guess_mime_type should be %v", guessMimeType))
 	assert.Equal(suite.T(), inboxHost, s3conf["host_base"], fmt.Sprintf("host_base should be %v", inboxHost))
 	assert.Equal(suite.T(), inboxHost, s3conf["host_bucket"], fmt.Sprintf("host_bucket should be %v", inboxHost))
-	assert.Equal(suite.T(), human_readable_sizes, s3conf["human_readable_sizes"], fmt.Sprintf("human_readable_sizes should be %v", human_readable_sizes))
-	assert.Equal(suite.T(), fmt.Sprintf("%v", chunk_size), s3conf["multipart_chunk_size_mb"], fmt.Sprintf("multipart_chunk_size_mb should be %v", chunk_size))
-	assert.Equal(suite.T(), use_https, s3conf["use_https"], fmt.Sprintf("use_https should be '%v'", use_https))
-	assert.Equal(suite.T(), fmt.Sprintf("%v", socket_timeout), s3conf["socket_timeout"], fmt.Sprintf("socket_timeout should be %v", socket_timeout))
+	assert.Equal(suite.T(), humanReadableSizes, s3conf["human_readable_sizes"], fmt.Sprintf("human_readable_sizes should be %v", humanReadableSizes))
+	assert.Equal(suite.T(), fmt.Sprintf("%v", chunkSize), s3conf["multipart_chunk_size_mb"], fmt.Sprintf("multipart_chunk_size_mb should be %v", chunkSize))
+	assert.Equal(suite.T(), useHTTPS, s3conf["use_https"], fmt.Sprintf("use_https should be '%v'", useHTTPS))
+	assert.Equal(suite.T(), fmt.Sprintf("%v", socketTimeout), s3conf["socket_timeout"], fmt.Sprintf("socket_timeout should be %v", socketTimeout))
 
 }

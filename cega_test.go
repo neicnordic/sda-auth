@@ -54,7 +54,7 @@ func (suite *CegaTests) SetupTest() {
 		log.Error("Failed to generate RSA key")
 	}
 
-	var privateKeyBytes []byte = x509.MarshalPKCS1PrivateKey(RSAPrivateKey)
+	var privateKeyBytes = x509.MarshalPKCS1PrivateKey(RSAPrivateKey)
 	privateKeyBlock := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: privateKeyBytes,

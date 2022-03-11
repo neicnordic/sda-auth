@@ -80,7 +80,10 @@ func (suite *ConfigTests) SetupTest() {
 	if err != nil {
 		log.Errorf("Error marshalling config yaml: %v", err)
 	}
-	suite.ConfigFile.Write(configYaml)
+	_, err = suite.ConfigFile.Write(configYaml)
+	if err != nil {
+		log.Errorf("Error writing config file: %v", err)
+	}
 
 }
 
@@ -94,7 +97,10 @@ func (suite *ConfigTests) TearDownTest() {
 func (suite *ConfigTests) TestConfig() {
 
 	// change dir so that we read the right config
-	os.Chdir(suite.TempDir)
+	err := os.Chdir(suite.TempDir)
+	if err != nil {
+		log.Errorf("Couldn't access temp directory: %v", err)
+	}
 
 	config := NewConfig()
 

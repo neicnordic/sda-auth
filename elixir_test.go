@@ -61,7 +61,7 @@ func (suite *ElixirTests) SetupTest() {
 		log.Error("Failed to generate RSA key")
 	}
 
-	var privateKeyBytes []byte = x509.MarshalPKCS1PrivateKey(RSAPrivateKey)
+	var privateKeyBytes = x509.MarshalPKCS1PrivateKey(RSAPrivateKey)
 	privateKeyBlock := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: privateKeyBytes,
@@ -109,7 +109,10 @@ func (suite *ElixirTests) SetupTest() {
 }
 
 func (suite *ElixirTests) TearDownTest() {
-	suite.mockServer.Shutdown()
+	err := suite.mockServer.Shutdown()
+	if err != nil {
+		log.Errorf("Couldn't shut down mock OIDC server: %v", err)
+	}
 }
 
 func (suite *ElixirTests) TestGetOidcClient() {
