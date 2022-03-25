@@ -28,15 +28,15 @@ type ElixirIdentity struct {
 // Configure an OpenID Connect aware OAuth2 client.
 func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 	contx := context.Background()
-	provider, err := oidc.NewProvider(contx, conf.issuer)
+	provider, err := oidc.NewProvider(contx, conf.Issuer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	oauth2Config := oauth2.Config{
-		ClientID:     conf.id,
-		ClientSecret: conf.secret,
-		RedirectURL:  conf.redirectURL,
+		ClientID:     conf.ID,
+		ClientSecret: conf.Secret,
+		RedirectURL:  conf.RedirectURL,
 		Endpoint:     provider.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "ga4gh_passport_v1 profile email"},
 	}

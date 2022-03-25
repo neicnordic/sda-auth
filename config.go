@@ -10,28 +10,29 @@ import (
 
 // ElixirConfig stores the config about the elixir oidc endpoint
 type ElixirConfig struct {
-	id              string
-	issuer          string
-	redirectURL     string
-	secret          string
-	jwtPrivateKey   string
-	jwtSignatureAlg string
+	ID              string
+	Issuer          string
+	RedirectURL     string
+	RevocationURL   string
+	Secret          string
+	JwtPrivateKey   string
+	JwtSignatureAlg string
 }
 
 // CegaConfig stores information about the cega endpoint
 type CegaConfig struct {
-	authURL         string
-	id              string
-	jwtIssuer       string
-	jwtPrivateKey   string
-	jwtSignatureAlg string
-	secret          string
+	AuthURL         string
+	ID              string
+	JwtIssuer       string
+	JwtPrivateKey   string
+	JwtSignatureAlg string
+	Secret          string
 }
 
 // ServerConfig stores general server information
 type ServerConfig struct {
-	cert string
-	key  string
+	Cert string
+	Key  string
 }
 
 // Config is a parent object for all the different configuration parts
@@ -57,24 +58,24 @@ func (c *Config) readConfig() {
 	// Setup elixir
 	elixir := ElixirConfig{}
 
-	elixir.id = viper.GetString("elixir.id")
-	elixir.issuer = viper.GetString("elixir.issuer")
-	elixir.redirectURL = viper.GetString("elixir.redirectUrl")
-	elixir.secret = viper.GetString("elixir.secret")
-	elixir.jwtPrivateKey = viper.GetString("elixir.jwtPrivateKey")
-	elixir.jwtSignatureAlg = viper.GetString("elixir.jwtSignatureAlg")
+	elixir.ID = viper.GetString("elixir.id")
+	elixir.Issuer = viper.GetString("elixir.issuer")
+	elixir.RedirectURL = viper.GetString("elixir.redirectUrl")
+	elixir.Secret = viper.GetString("elixir.secret")
+	elixir.JwtPrivateKey = viper.GetString("elixir.jwtPrivateKey")
+	elixir.JwtSignatureAlg = viper.GetString("elixir.jwtSignatureAlg")
 
 	c.Elixir = elixir
 
 	// Setup cega
 	cega := CegaConfig{}
 
-	cega.authURL = viper.GetString("cega.authUrl")
-	cega.id = viper.GetString("cega.id")
-	cega.jwtIssuer = viper.GetString("cega.jwtIssuer")
-	cega.jwtPrivateKey = viper.GetString("cega.jwtPrivateKey")
-	cega.jwtSignatureAlg = viper.GetString("cega.jwtSignatureAlg")
-	cega.secret = viper.GetString("cega.secret")
+	cega.AuthURL = viper.GetString("cega.authUrl")
+	cega.ID = viper.GetString("cega.id")
+	cega.JwtIssuer = viper.GetString("cega.jwtIssuer")
+	cega.JwtPrivateKey = viper.GetString("cega.jwtPrivateKey")
+	cega.JwtSignatureAlg = viper.GetString("cega.jwtSignatureAlg")
+	cega.Secret = viper.GetString("cega.secret")
 
 	c.Cega = cega
 
@@ -82,10 +83,10 @@ func (c *Config) readConfig() {
 	s := ServerConfig{}
 
 	if viper.IsSet("server.cert") {
-		s.cert = viper.GetString("server.cert")
+		s.Cert = viper.GetString("server.cert")
 	}
 	if viper.IsSet("server.key") {
-		s.key = viper.GetString("server.key")
+		s.Key = viper.GetString("server.key")
 	}
 
 	c.Server = s

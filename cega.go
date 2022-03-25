@@ -104,13 +104,13 @@ func generateJwtToken(issuer, sub, key, alg string) (string, string) {
 func authenticateWithCEGA(conf CegaConfig, username string) (*http.Response, error) {
 	client := &http.Client{}
 	payload := strings.NewReader("")
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s?idType=username", conf.authURL, username), payload)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s?idType=username", conf.AuthURL, username), payload)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req.Header.Add("Authorization", "Basic "+getb64Credentials(conf.id, conf.secret))
+	req.Header.Add("Authorization", "Basic "+getb64Credentials(conf.ID, conf.Secret))
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := client.Do(req)
