@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/golang-jwt/jwt/v4 v4.4.0
+	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/google/uuid v1.3.0
 	github.com/kataras/iris/v12 v12.2.0-alpha9
 	github.com/oauth2-proxy/mockoidc v0.0.0-20220308204021-b9169deeb282
