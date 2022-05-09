@@ -207,6 +207,13 @@ func validateToken(rawJwt, jwksURL string) (*jwt.Token, error) {
 
 	token, err := jwt.Parse(rawJwt, func(token *jwt.Token) (interface{}, error) {
 
+		// Validate that the alg is what we expect: RSA or ES
+		_, okRSA := token.Method.(*jwt.SigningMethodRSA)
+		_, okES := token.Method.(*jwt.SigningMethodECDSA)
+		if !(okRSA || okES) {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+
 		return pubKey, nil
 	})
 
