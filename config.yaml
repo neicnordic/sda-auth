@@ -10,6 +10,7 @@ elixir:
   secret: "wHPVQaYXmdDHg"
   jwtPrivateKey: "keys/sign-rsa-jwt.key"
   jwtSignatureAlg: "RS256"
+  jwkPath: "/jwks"
 cega:
   authUrl: "http://cega:8443/lega/v1/legas/users/"
   id: "dummy"
@@ -18,6 +19,7 @@ cega:
   jwtSignatureAlg: "ES256"
   secret: "dummy"
 server:
-  cert: "keys/cert.pem"
-  key: "keys/key.pem"
+  # do not use TLS until certs are fixed
+  # cert: "keys/cert.pem"
+  # key: "keys/key.pem"
 s3Inbox: "s3.example.com"
