@@ -235,3 +235,74 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirEC() {
 
 	defer os.Remove("keys/sign-ecdsa-jwt.key")
 }
+
+func (suite *ElixirTests) TestValidateJwt() {
+	session, err := suite.mockServer.SessionStore.NewSession("openid email profile", "nonce", mockoidc.DefaultUser(), "", "")
+	if err != nil {
+		log.Error(err)
+	}
+	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
+	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	elixirJWT := elixirIdentity.Token
+
+	// Create HS256 test token
+	mySigningKey := []byte("AllYourBase")
+	claims := &jwt.StandardClaims{
+		Issuer: "test",
+	}
+	tokenHS256 := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	testTokenHS256, err := tokenHS256.SignedString(mySigningKey)
+	if err != nil {
+		log.Error(err)
+	}
+
+	// Create RSA test token
+	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Error(err)
+	}
+	tokenRSA := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	testTokenRSA, err := tokenRSA.SignedString(rsaKey)
+	if err != nil {
+		log.Error(err)
+	}
+
+	// Create RSA test token
+	ecKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		log.Error(err)
+	}
+	tokenEC := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	testTokenEC, err := tokenEC.SignedString(ecKey)
+	if err != nil {
+		log.Error(err)
+	}
+
+	// sanity check
+	token, err := validateToken(elixirJWT, suite.mockServer.JWKSEndpoint())
+	if assert.Nil(suite.T(), err) {
+		assert.True(suite.T(), token.Valid, "Validation failed but without returning errors")
+	}
+
+	// wrong jwk url
+	token, err = validateToken(elixirJWT, "http://some/jwk/endpoint")
+	assert.ErrorContains(suite.T(), err, "failed to fetch remote JWK")
+
+	// wrong signing method
+	_, err = validateToken(testTokenHS256, suite.mockServer.JWKSEndpoint())
+	if assert.Error(suite.T(), err) {
+		assert.Equal(suite.T(), "unexpected signing method", err.Error())
+	}
+
+	// wrong private key, RSA
+	_, err = validateToken(testTokenRSA, suite.mockServer.JWKSEndpoint())
+	if assert.Error(suite.T(), err) {
+		assert.Equal(suite.T(), "signature not valid: crypto/rsa: verification error", err.Error())
+	}
+
+	// wrong private key, ECDSA
+	_, err = validateToken(testTokenEC, suite.mockServer.JWKSEndpoint())
+	if assert.Error(suite.T(), err) {
+		assert.Equal(suite.T(), "signature not valid: key is of invalid type", err.Error())
+	}
+}
