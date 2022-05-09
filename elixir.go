@@ -210,5 +210,13 @@ func validateToken(rawJwt, jwksURL string) (*jwt.Token, error) {
 		return pubKey, nil
 	})
 
+	// Validate the error
+	v, _ := err.(*jwt.ValidationError)
+
+	// If error is for signature validation
+	if err != nil && v.Errors == jwt.ValidationErrorSignatureInvalid {
+		return nil, fmt.Errorf("signature not valid: %s", err.Error())
+	}
+
 	return token, err
 }
