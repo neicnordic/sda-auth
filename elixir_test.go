@@ -166,7 +166,7 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirRSA() {
 		log.Error(err)
 	}
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
 	elixirJWT := elixirIdentity.Token
 
 	idStruct := ElixirIdentity{
@@ -206,7 +206,7 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirEC() {
 		log.Error(err)
 	}
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
 	elixirJWT := elixirIdentity.Token
 
 	idStruct := ElixirIdentity{
@@ -242,12 +242,12 @@ func (suite *ElixirTests) TestValidateJwt() {
 		log.Error(err)
 	}
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
 	elixirJWT := elixirIdentity.Token
 
 	// Create HS256 test token
 	mySigningKey := []byte("AllYourBase")
-	claims := &jwt.StandardClaims{
+	claims := &jwt.RegisteredClaims{
 		Issuer: "test",
 	}
 	tokenHS256 := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -285,7 +285,7 @@ func (suite *ElixirTests) TestValidateJwt() {
 	}
 
 	// wrong jwk url
-	token, err = validateToken(elixirJWT, "http://some/jwk/endpoint")
+	_, err = validateToken(elixirJWT, "http://some/jwk/endpoint")
 	assert.ErrorContains(suite.T(), err, "failed to fetch remote JWK")
 
 	// wrong signing method
