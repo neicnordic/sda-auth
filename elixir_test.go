@@ -160,8 +160,15 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirRSA() {
 		EGAclaims jwt.MapClaims
 		JWTRSAalg = "RS256"
 	)
-	jwtSignatureAlg := JWTRSAalg
-	elixirJWT := "eyJhbGciOiJIUzI1NiIsImtpZCI6InJzYTEiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiI0ZjdkZjAyNWQzYzhjNmM2NDVhOGJlM2U2ZDQyYjU3ODlmZmM5NTNlQGVsaXhpci1ldXJvcGUub3JnIiwiYXVkIjoiNGU5NDE2YTctMzUxNS00NDdhLWI4NDgtZDRhYzdjYWJhNTdmIiwiYXV0aF90aW1lIjoxNjMxNzkwMTgzLCJraWQiOiJyc2ExIiwiaXNzIjoiaHR0cHM6XC9cL2xvZ2luLmVsaXhpci1jemVjaC5vcmdcL29pZGNcLyIsImV4cCI6MTYzMTc5MDc5NCwiaWF0IjoxNjMxNzkwMTkzLCJqdGkiOiIyN2ZlM2M0Yy1lMTJiLTQ2ZTYtYjlkZC1mMTVlMjg4MDM4ZTEifQ.ecPJN2F3sPhmYZXJS8i3JD93wnzbTq9Ot9P0xCtun8zZJMvyCumWqAyjFgx_kawR2QS9XdS4kC0fOxSrnKP5H_jUWC61OjfdD7acp4nfPrqtYeCm6cYCanUAjdAVA7dS-W8_DC41WlkV-jd22di1Jyystz45HJ-o_xrlCo6BKUa-CsgylyUxWjEta6XTWAw5ZhAedOH2tmDG3S7rNwpEVICjqwPjLL62qmLlXB_ZlhZhWA1oK0rjNZ9GurXt41KcOPuGNvQU1v5_a8qQ_CSTtnhSWFPIw6jBrZ5jkFNj7-vqRDGz2Ae5cvwmm-G7LE9Yo-cbptKa01sOhijTvGq01A"
+
+	session, err := suite.mockServer.SessionStore.NewSession("openid email profile", "nonce", mockoidc.DefaultUser(), "", "")
+	if err != nil {
+		log.Error(err)
+	}
+	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
+	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	elixirJWT := elixirIdentity.Token
+
 	idStruct := ElixirIdentity{
 		User:     "",
 		Token:    elixirJWT,
@@ -169,7 +176,7 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirRSA() {
 		Profile:  "Dummy Tester",
 		Email:    "dummy.tester@gs.uu.se",
 	}
-	tokenEGA, _, err := generateJwtFromElixir(idStruct, suite.RSAKeyFile.Name(), jwtSignatureAlg, "http://test.login.org/elixir/login")
+	tokenEGA, _, err := generateJwtFromElixir(idStruct, suite.RSAKeyFile.Name(), JWTRSAalg, "http://test.login.org/elixir/login", suite.mockServer.JWKSEndpoint())
 	assert.Nil(suite.T(), err)
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
 	EGAclaims, ok := token.Claims.(jwt.MapClaims)
@@ -193,7 +200,15 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirEC() {
 		EGAclaims jwt.MapClaims
 		JWTalg    = "ES256"
 	)
-	elixirJWT := "eyJhbGciOiJIUzI1NiIsImtpZCI6InJzYTEiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiI0ZjdkZjAyNWQzYzhjNmM2NDVhOGJlM2U2ZDQyYjU3ODlmZmM5NTNlQGVsaXhpci1ldXJvcGUub3JnIiwiYXVkIjoiNGU5NDE2YTctMzUxNS00NDdhLWI4NDgtZDRhYzdjYWJhNTdmIiwiYXV0aF90aW1lIjoxNjMxNzkwMTgzLCJraWQiOiJyc2ExIiwiaXNzIjoiaHR0cHM6XC9cL2xvZ2luLmVsaXhpci1jemVjaC5vcmdcL29pZGNcLyIsImV4cCI6MTYzMTc5MDc5NCwiaWF0IjoxNjMxNzkwMTkzLCJqdGkiOiIyN2ZlM2M0Yy1lMTJiLTQ2ZTYtYjlkZC1mMTVlMjg4MDM4ZTEifQ.ecPJN2F3sPhmYZXJS8i3JD93wnzbTq9Ot9P0xCtun8zZJMvyCumWqAyjFgx_kawR2QS9XdS4kC0fOxSrnKP5H_jUWC61OjfdD7acp4nfPrqtYeCm6cYCanUAjdAVA7dS-W8_DC41WlkV-jd22di1Jyystz45HJ-o_xrlCo6BKUa-CsgylyUxWjEta6XTWAw5ZhAedOH2tmDG3S7rNwpEVICjqwPjLL62qmLlXB_ZlhZhWA1oK0rjNZ9GurXt41KcOPuGNvQU1v5_a8qQ_CSTtnhSWFPIw6jBrZ5jkFNj7-vqRDGz2Ae5cvwmm-G7LE9Yo-cbptKa01sOhijTvGq01A"
+
+	session, err := suite.mockServer.SessionStore.NewSession("openid email profile", "nonce", mockoidc.DefaultUser(), "", "")
+	if err != nil {
+		log.Error(err)
+	}
+	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
+	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	elixirJWT := elixirIdentity.Token
+
 	idStruct := ElixirIdentity{
 		User:     "",
 		Token:    elixirJWT,
@@ -201,7 +216,7 @@ func (suite *ElixirTests) TestGenerateJwtFromElixirEC() {
 		Profile:  "Dummy Tester",
 		Email:    "dummy.tester@gs.uu.se",
 	}
-	tokenEGA, _, err := generateJwtFromElixir(idStruct, suite.ECKeyFile.Name(), JWTalg, "http://test.login.org/elixir/login")
+	tokenEGA, _, err := generateJwtFromElixir(idStruct, suite.ECKeyFile.Name(), JWTalg, "http://test.login.org/elixir/login", suite.mockServer.JWKSEndpoint())
 	assert.Nil(suite.T(), err)
 
 	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
