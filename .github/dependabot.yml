@@ -5,6 +5,8 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+    reviewers:
+      - "neicnordic/sensitive-data-development-collaboration"
 
   - package-ecosystem: "docker"
     # Look for a `Dockerfile` in the `root` directory
@@ -12,4 +14,6 @@ updates:
     # Check for updates once a week
     schedule:
       interval: "weekly"
+    reviewers:
+      - "neicnordic/sensitive-data-development-collaboration"
 
