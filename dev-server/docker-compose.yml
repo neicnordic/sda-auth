@@ -36,6 +36,8 @@ services:
     container_name: auth
     build:
       context: ../
+      args: 
+        GOLANG_VERSION: $GOLANG_VERSION
       dockerfile: Dockerfile
     depends_on:
         - oidc

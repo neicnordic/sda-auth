@@ -27,6 +27,6 @@ jobs:
       run: |
         sudo echo "127.0.0.1 oidc" | sudo tee -a /etc/hosts
     - name: Start virtual infrastructure
-      run: docker-compose -f ./dev-server/docker-compose.yml up -d --force-recreate --build
+      run: GOLANG_VERSION=${{ matrix.go-version }} docker-compose -f ./dev-server/docker-compose.yml up -d --force-recreate --build
     - name: Run unit tests
       run: tox -e unit_tests -c tests/tox.ini
