@@ -20,6 +20,9 @@ Parameter | Description | Defined value
 `CEGA_JWTPRIVATEKEY` | Path to private key for signing the JWT token | `keys/sign-jwt.key`
 `CEGA_JWTSIGNATUREALG` | Algorithm used to sign the JWT token. ES256 (ECDSA) or RS256 (RSA) are supported | `ES256`
 `CEGA_JWTISSUER` | Issuer of CEGA JWT tokens | `http://auth:8080`
+`CORS_ORIGINS` | Allowed Cross-Origin Resource Sharing (CORS) origins | `""`
+`CORS_METHODS` | Allowed Cross-Origin Resource Sharing (CORS) methods | `""`
+`CORS_CREDENTIALS` | If cookies, authorization headers, and TLS client certificates are allowed over CORS | `false`
 `SERVER_CERT` | Certificate file path | `""`
 `SERVER_KEY` | Private key file path | `""`
 `S3INBOX` | S3 inbox host | `s3.example.com`
@@ -27,12 +30,36 @@ Parameter | Description | Defined value
 ## Running the development setup
 
 First, create a RSA private key under the name `sign-rsa-jwt.key` in the folder `keys`.
+```
+openssl genrsa -out keys/sign-rsa-jwt.key 2048
+```
 
-Start the full stack  bu running docker-compose in the dev-server folder:
+Start the full stack by running docker-compose in the `dev-server` folder:
 
 ```bash
-docker-compose up -d --force-recreate --build
+docker compose up --build
 ```
+
+The current setup also requires that
+```
+127.0.0.1  oidc
+```
+is added to `/etc/hosts`, so that routing works properly.
+
+## Running with Cross-Origin Resource Sharing (CORS)
+
+This servce can be run as a backend only, and in the case where the frontend
+is running somewhere else, CORS is needed.
+
+Recommended cors settings for a given host are:
+```
+export CORS_ORIGINS="https://<frontend-url>"
+export CORS_METHODS="GET,OPTIONS"
+export CORS_CREDENTIALS="true"
+```
+
+There is a minimal CORS login testing site at http://localhost:8000 of the
+dev-server.
 
 ## Building a Docker container
 
