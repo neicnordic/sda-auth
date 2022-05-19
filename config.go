@@ -29,10 +29,19 @@ type CegaConfig struct {
 	Secret          string
 }
 
+// CORSConfig stores information about cross-origin resource sharing
+type CORSConfig struct {
+	AllowOrigin      string
+	AllowMethods     string
+	AllowHeaders     string
+	AllowCredentials bool
+}
+
 // ServerConfig stores general server information
 type ServerConfig struct {
 	Cert string
 	Key  string
+	CORS CORSConfig
 }
 
 // Config is a parent object for all the different configuration parts
@@ -79,8 +88,23 @@ func (c *Config) readConfig() {
 
 	c.Cega = cega
 
+	// Read CORS settings
+	cors := CORSConfig{AllowCredentials: false}
+	if viper.IsSet("cors.origins") {
+		cors.AllowOrigin = viper.GetString("cors.origins")
+	}
+	if viper.IsSet("cors.methods") {
+		cors.AllowMethods = viper.GetString("cors.methods")
+	}
+	if viper.IsSet("cors.headers") {
+		cors.AllowHeaders = viper.GetString("cors.headers")
+	}
+	if viper.IsSet("cors.credentials") {
+		cors.AllowCredentials = viper.GetBool("cors.credentials")
+	}
+
 	// Setup server
-	s := ServerConfig{}
+	s := ServerConfig{CORS: cors}
 
 	if viper.IsSet("server.cert") {
 		s.Cert = viper.GetString("server.cert")
