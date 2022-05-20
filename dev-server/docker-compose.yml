@@ -25,7 +25,14 @@ services:
     image: egarchive/lega-base:release.v0.2.0
     volumes:
       - ./cega-users:/cega
-    command: ["python", "/cega/cega-mock.py", "0.0.0.0", "8443", "/cega/users.json"]
+    command:
+      [
+        "python",
+        "/cega/cega-mock.py",
+        "0.0.0.0",
+        "8443",
+        "/cega/users.json"
+      ]
     environment:
       - LEGA_INSTANCES=dummy
       - CEGA_USERS_PASSWORD=dummy
@@ -36,10 +43,12 @@ services:
     container_name: auth
     build:
       context: ../
+      args:
+        GOLANG_VERSION: $GOLANG_VERSION
       dockerfile: Dockerfile
     depends_on:
-        - oidc
-        - cega
+      - oidc
+      - cega
     environment:
       - ELIXIR_ID=XC56EL11xx
       - ELIXIR_ISSUER=http://oidc:9090
