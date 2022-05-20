@@ -44,7 +44,7 @@ services:
     build:
       context: ../
       args:
-        GOLANG_VERSION: $GOLANG_VERSION
+        GOLANG_VERSION: ${GOLANG_VERSION-1.18}
       dockerfile: Dockerfile
     depends_on:
       - oidc
