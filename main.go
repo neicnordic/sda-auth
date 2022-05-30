@@ -250,6 +250,9 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 
 	oidcData := auth.elixirLogin(ctx)
+	if oidcData == nil {
+		return
+	}
 
 	s := sessions.Get(ctx)
 	s.SetFlash("elixir", oidcData.S3Conf)
@@ -265,6 +268,9 @@ func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
 
 	oidcData := auth.elixirLogin(ctx)
+	if oidcData == nil {
+		return
+	}
 
 	_, err := ctx.JSON(oidcData)
 	if err != nil {
