@@ -59,7 +59,10 @@ export CORS_CREDENTIALS="true"
 ```
 
 There is a minimal CORS login testing site at http://localhost:8000 of the
-dev-server.
+dev-server. To use the CORS login page, the `dev-server/docker-compose.yml` file
+must be updated by settings `CLIENT_REDIRECT_URI` (under
+`services/oidc/environment`) to `http://localhost:8000` and the server
+restarted.
 
 ## Building a Docker container
 
