@@ -37,7 +37,7 @@ openssl genrsa -out keys/sign-rsa-jwt.key 2048
 Start the full stack by running docker-compose in the `dev-server` folder:
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
 The current setup also requires that
