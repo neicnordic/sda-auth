@@ -31,7 +31,7 @@ Parameter | Description | Defined value
 
 First, create a RSA private key under the name `sign-rsa-jwt.key` in the folder `keys`.
 ```
-openssl genrsa -out keys/sign-rsa-jwt.key 2048
+openssl genrsa -out keys/sign-rsa-jwt.key 2048  && chmod 664 keys/sign-rsa-jwt.key
 ```
 
 Start the full stack by running docker-compose in the `dev-server` folder:
