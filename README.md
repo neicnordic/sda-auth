@@ -48,7 +48,7 @@ is added to `/etc/hosts`, so that routing works properly.
 
 ## Running with Cross-Origin Resource Sharing (CORS)
 
-This servce can be run as a backend only, and in the case where the frontend
+This service can be run as a backend only, and in the case where the frontend
 is running somewhere else, CORS is needed.
 
 Recommended cors settings for a given host are:
