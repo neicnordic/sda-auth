@@ -198,7 +198,7 @@ func (auth AuthHandler) getElixir(ctx iris.Context) {
 	}
 }
 
-// getElixirLogin authenticates the user with return values from the elixir
+// elixirLogin authenticates the user with return values from the elixir
 // login page and returns the resulting data to the getElixirLogin page, or
 // getElixirCORSLogin endpoint.
 func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
