@@ -44,7 +44,7 @@ services:
     build:
       context: ../
       args:
-        GOLANG_VERSION: $GOLANG_VERSION
+        GOLANG_VERSION: ${GOLANG_VERSION-1.18}
       dockerfile: Dockerfile
     depends_on:
       - oidc
@@ -61,6 +61,9 @@ services:
       - CEGA_JWTPRIVATEKEY=keys/sign-jwt.key
       - CEGA_JWTSIGNATUREALG=ES256
       - CEGA_SECRET=dummy
+      - CORS_ORIGINS=http://localhost:8000
+      - CORS_METHODS=GET,OPTIONS
+      - CORS_CREDENTIALS=TRUE
       - LOG_LEVEL=info
       - S3INBOX=s3.example.com
     volumes:
@@ -69,3 +72,10 @@ services:
     image: sda-auth
     ports:
       - 8080:8080
+  remote:
+    container_name: remote
+    image: nginx:1.21
+    volumes:
+      - ./remote:/usr/share/nginx/html
+    ports:
+      - 8000:80

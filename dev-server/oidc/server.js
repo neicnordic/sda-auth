@@ -68,7 +68,7 @@ const oidc = new Provider(`http://${host}${ext_port ? ':' : ''}${ext_port}`, oid
 const clients= [{
     client_id: config.clientId,
     client_secret: config.clientSecret,
-    redirect_uris: [config.clientRedirectUri]
+    redirect_uris: config.clientRedirectUri.split(",")
   }];
 
 let server;

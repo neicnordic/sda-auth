@@ -9,6 +9,7 @@ import (
 
 	"github.com/coreos/go-oidc"
 	"github.com/google/uuid"
+	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/sessions"
 	log "github.com/sirupsen/logrus"
@@ -18,6 +19,11 @@ import (
 type LoginOption struct {
 	Name string
 	URL  string
+}
+
+type OIDCData struct {
+	S3Conf   map[string]string
+	ElixirID ElixirIdentity
 }
 
 type AuthHandler struct {
@@ -182,12 +188,20 @@ func (auth AuthHandler) getEGAConf(ctx iris.Context) {
 func (auth AuthHandler) getElixir(ctx iris.Context) {
 	state := uuid.New()
 	ctx.SetCookie(&http.Cookie{Name: "state", Value: state.String(), Secure: true})
-	ctx.Redirect(auth.OAuth2Config.AuthCodeURL(state.String()))
+
+	redirectURI := ctx.Request().URL.Query().Get("redirect_uri")
+	if redirectURI != "" {
+		redirectParam := oauth2.SetAuthURLParam("redirect_uri", redirectURI)
+		ctx.Redirect(auth.OAuth2Config.AuthCodeURL(state.String(), redirectParam))
+	} else {
+		ctx.Redirect(auth.OAuth2Config.AuthCodeURL(state.String()))
+	}
 }
 
-// getElixirLogin authenticates the user with return values from the elixir
-// login page
-func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
+// elixirLogin authenticates the user with return values from the elixir
+// login page and returns the resulting data to the getElixirLogin page, or
+// getElixirCORSLogin endpoint.
+func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 	state := ctx.Request().URL.Query().Get("state")
 	sessionState := ctx.GetCookie("state")
 
@@ -197,10 +211,10 @@ func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 		if err != nil {
 			log.Error("Failed to write response: ", err)
 
-			return
+			return nil
 		}
 
-		return
+		return nil
 	}
 
 	code := ctx.Request().URL.Query().Get("code")
@@ -211,26 +225,54 @@ func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 		if err != nil {
 			log.Error("Failed to write response: ", err)
 
-			return
+			return nil
 		}
 
-		return
+		return nil
 	}
 
 	tokenEGA, expDate, err := generateJwtFromElixir(idStruct, auth.Config.Elixir.JwtPrivateKey, auth.Config.Elixir.JwtSignatureAlg, auth.Config.Elixir.RedirectURL)
 	if err != nil {
 		log.Errorf("error when generating token: %v", err)
 
-		return
+		return nil
 	}
 	idStruct.Token = tokenEGA
 	idStruct.ExpDate = expDate
 
 	log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 	s3conf := getS3ConfigMap(idStruct.Token, auth.Config.S3Inbox, idStruct.User)
+
+	return &OIDCData{S3Conf: s3conf, ElixirID: idStruct}
+}
+
+// getElixirLogin renders the `elixir.html` template to the given iris context
+func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
+
+	oidcData := auth.elixirLogin(ctx)
+	if oidcData == nil {
+		return
+	}
+
 	s := sessions.Get(ctx)
-	s.SetFlash("elixir", s3conf)
-	err = ctx.View("elixir.html", idStruct)
+	s.SetFlash("elixir", oidcData.S3Conf)
+	err := ctx.View("elixir.html", oidcData.ElixirID)
+	if err != nil {
+		log.Error("Failed to view login form: ", err)
+
+		return
+	}
+}
+
+// getElixirCORSLogin returns the oidc data as JSON to the given iris context
+func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
+
+	oidcData := auth.elixirLogin(ctx)
+	if oidcData == nil {
+		return
+	}
+
+	_, err := ctx.JSON(oidcData)
 	if err != nil {
 		log.Error("Failed to view login form: ", err)
 
@@ -265,6 +307,15 @@ func main() {
 
 	// Start sessions handler in order to send flash messages
 	sess := sessions.New(sessions.Config{Cookie: "_session_id", AllowReclaim: true})
+
+	// Set CORS context
+	corsContext := cors.New(cors.Options{
+		AllowedOrigins:   strings.Split(config.Server.CORS.AllowOrigin, ","),
+		AllowedMethods:   strings.Split(config.Server.CORS.AllowMethods, ","),
+		AllowCredentials: config.Server.CORS.AllowCredentials,
+	})
+	app.Use(corsContext)
+
 	app.Use(sess.Handler())
 
 	app.RegisterView(iris.HTML(authHandler.htmlDir, ".html"))
@@ -282,6 +333,7 @@ func main() {
 	app.Get("/elixir", authHandler.getElixir)
 	app.Get("/elixir/s3conf", authHandler.getElixirConf)
 	app.Get("/elixir/login", authHandler.getElixirLogin)
+	app.Get("/elixir/cors_login", authHandler.getElixirCORSLogin)
 
 	var err error
 	if config.Server.Cert != "" && config.Server.Key != "" {
