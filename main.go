@@ -80,7 +80,7 @@ func (auth AuthHandler) getLoginOptions(ctx iris.Context) {
 	if auth.Config.Cega.ID != "" && auth.Config.Cega.Secret != "" {
 		response = append(response, LoginOption{Name: "EGA", URL: "/ega/login"})
 	}
-	_, err := ctx.JSON(response)
+	err := ctx.JSON(response)
 	if err != nil {
 		log.Error("Failed to create JSON login options: ", err)
 
@@ -272,7 +272,7 @@ func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
 		return
 	}
 
-	_, err := ctx.JSON(oidcData)
+	err := ctx.JSON(oidcData)
 	if err != nil {
 		log.Error("Failed to view login form: ", err)
 
