@@ -17,6 +17,7 @@ type ElixirConfig struct {
 	Secret          string
 	JwtPrivateKey   string
 	JwtSignatureAlg string
+	jwkUrl          string
 }
 
 // CegaConfig stores information about the cega endpoint
@@ -64,6 +65,7 @@ func NewConfig() *Config {
 }
 
 func (c *Config) readConfig() {
+
 	// Setup elixir
 	elixir := ElixirConfig{}
 
@@ -73,6 +75,9 @@ func (c *Config) readConfig() {
 	elixir.Secret = viper.GetString("elixir.secret")
 	elixir.JwtPrivateKey = viper.GetString("elixir.jwtPrivateKey")
 	elixir.JwtSignatureAlg = viper.GetString("elixir.jwtSignatureAlg")
+	if viper.IsSet("elixir.jwkPath") {
+		elixir.jwkUrl = elixir.Issuer + viper.GetString("elixir.jwkPath")
+	}
 
 	c.Elixir = elixir
 

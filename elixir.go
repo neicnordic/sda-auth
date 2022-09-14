@@ -10,6 +10,7 @@ import (
 
 	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/lestrrat/go-jwx/jwk"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -122,13 +123,24 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 }
 
 // Returns long-lived token and expiration date as strings
-func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (string, string, error) {
+func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss, jwksURL string) (string, string, error) {
 	var (
 		elixirClaims   jwt.MapClaims
 		EGAtokenString string
+		token          *jwt.Token
+		err            error
 	)
 
-	token, _ := jwt.Parse(idStruct.Token, func(tokenElixir *jwt.Token) (interface{}, error) { return nil, nil })
+	if jwksURL == "" {
+		token, _ = jwt.Parse(idStruct.Token, func(tokenElixir *jwt.Token) (interface{}, error) { return nil, nil })
+	} else {
+		token, err = validateToken(idStruct.Token, jwksURL)
+		if err != nil {
+			return "", "", fmt.Errorf("could not validate raw jwt against pub key, reason: %v", err)
+		}
+		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("Token was validated")
+	}
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		elixirClaims = claims
 	} else {
@@ -178,4 +190,40 @@ func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss string) (strin
 	}
 
 	return EGAtokenString, dateDuration.Format("2006-01-02 15:04:05"), nil
+}
+
+// Validate raw (Elixir) jwt against public key from jwk. Return parsed jwt.
+func validateToken(rawJwt, jwksURL string) (*jwt.Token, error) {
+
+	// Fetch public key
+	set, err := jwk.Fetch(jwksURL)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+	pubKey, err := set.Keys[0].Materialize()
+	if err != nil {
+		return nil, fmt.Errorf("failed to materialize public key %s", err.Error())
+	}
+
+	token, err := jwt.Parse(rawJwt, func(token *jwt.Token) (interface{}, error) {
+
+		// Validate that the alg is what we expect: RSA or ES
+		_, okRSA := token.Method.(*jwt.SigningMethodRSA)
+		_, okES := token.Method.(*jwt.SigningMethodECDSA)
+		if !(okRSA || okES) {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+
+		return pubKey, nil
+	})
+
+	// Validate the error
+	v, _ := err.(*jwt.ValidationError)
+
+	// If error is for signature validation
+	if err != nil && v.Errors == jwt.ValidationErrorSignatureInvalid {
+		return nil, fmt.Errorf("signature not valid: %s", err.Error())
+	}
+
+	return token, err
 }

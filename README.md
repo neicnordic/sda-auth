@@ -14,6 +14,7 @@ Parameter | Description | Defined value
 `ELIXIR_ISSUER` | Elixir issuer URL | `http://oidc:9090`
 `ELIXIR_JWTPRIVATEKEY` | Path to private key for signing the JWT token | `keys/sign-rsa-jwt.key`
 `ELIXIR_JWTSIGNATUREALG` | Algorithm used to sign the JWT token. ES256 (ECDSA) or RS256 (RSA) are supported | `RS256`
+`ELIXIR_JWKPATH` | JWK endpoint where the public key of the Elixir issuer can be retrieved from for token validation | `/jwks`
 `CEGA_AUTHURL` | CEGA server endpoint | `http://cega:8443/lega/v1/legas/users/`
 `CEGA_ID` | CEGA server authentication id | `dummy`
 `CEGA_SECRET` | CEGA server authentication secret | `dummy`

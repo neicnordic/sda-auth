@@ -231,7 +231,7 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 		return nil
 	}
 
-	tokenEGA, expDate, err := generateJwtFromElixir(idStruct, auth.Config.Elixir.JwtPrivateKey, auth.Config.Elixir.JwtSignatureAlg, auth.Config.Elixir.RedirectURL)
+	tokenEGA, expDate, err := generateJwtFromElixir(idStruct, auth.Config.Elixir.JwtPrivateKey, auth.Config.Elixir.JwtSignatureAlg, auth.Config.Elixir.RedirectURL, auth.Config.Elixir.jwkUrl)
 	if err != nil {
 		log.Errorf("error when generating token: %v", err)
 
