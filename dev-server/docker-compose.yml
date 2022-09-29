@@ -62,8 +62,8 @@ services:
       - CEGA_JWTPRIVATEKEY=keys/sign-jwt.key
       - CEGA_JWTSIGNATUREALG=ES256
       - CEGA_SECRET=dummy
-      - CORS_ORIGINS=http://localhost:8000
-      - CORS_METHODS=GET,OPTIONS
+      - CORS_ORIGINS=http://localhost:8080
+      - CORS_METHODS=GET,POST, OPTIONS
       - CORS_CREDENTIALS=TRUE
       - LOG_LEVEL=info
       - S3INBOX=s3.example.com
