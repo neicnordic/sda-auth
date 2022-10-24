@@ -12,7 +12,7 @@ require (
 	github.com/oauth2-proxy/mockoidc v0.0.0-20220308204021-b9169deeb282
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.13.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 	golang.org/x/net v0.0.0-20220909164309-bea034e7d591
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
