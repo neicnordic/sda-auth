@@ -1,7 +1,12 @@
 package main
 
+import "strings"
+
 // Retrieve a config map containing s3cmd configuration values
 func getS3ConfigMap(token, inboxHost, user string) map[string]string {
+	if strings.Contains(user, "@") {
+		user = strings.ReplaceAll(user, "@", "_")
+	}
 	s3conf := map[string]string{"access_key": user,
 		"secret_key":              user,
 		"access_token":            token,
