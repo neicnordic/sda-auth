@@ -131,12 +131,6 @@ func (suite *ElixirTests) TestGetOidcClient() {
 	assert.Equal(suite.T(), []string{"openid", "ga4gh_passport_v1 profile email"}, oauth2Config.Scopes, "oauth2Config has the wrong scopes")
 }
 
-func (suite *ElixirTests) TestRemoveHost() {
-	assert.Equal(suite.T(), "test1", removeHost("test1"), "removeHost should return the input string when given 'test1'")
-	assert.Equal(suite.T(), "test2", removeHost("test2@test.com"), "removeHost should return 'test2' when given 'test2@test.com'")
-	assert.Equal(suite.T(), "test3", removeHost("test3@test@test.com"), "removeHost should return 'test3' when given 'test3@test@test.com'")
-}
-
 func (suite *ElixirTests) TestAuthenticateWithOidc() {
 
 	// Create a code to authenticate
