@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc"
@@ -43,20 +42,6 @@ func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 	}
 
 	return oauth2Config, provider
-}
-
-// If the given string is formatted like <user>@<host>, only the <user> part is
-// returned, otherwise the original string is returned.
-// Note that this function will split on the first '@' symbol, and not the last
-// like an e-mail parser would. This is to ensure that there are no @ signs in
-// the returned username.
-func removeHost(raw string) string {
-	index := strings.Index(raw, "@")
-	if index > -1 {
-		return raw[:index]
-	}
-
-	return raw
 }
 
 // Authenticate with an Oidc client.against Elixir AAI
@@ -112,7 +97,7 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	}
 
 	idStruct = ElixirIdentity{
-		User:     removeHost(userInfo.Subject),
+		User:     userInfo.Subject,
 		Token:    rawIDToken,
 		Passport: claims.PassportClaim,
 		Profile:  claims.ProfileClaim,
