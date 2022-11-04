@@ -308,13 +308,15 @@ func main() {
 	// Start sessions handler in order to send flash messages
 	sess := sessions.New(sessions.Config{Cookie: "_session_id", AllowReclaim: true})
 
-	// Set CORS context
-	corsContext := cors.New(cors.Options{
-		AllowedOrigins:   strings.Split(config.Server.CORS.AllowOrigin, ","),
-		AllowedMethods:   strings.Split(config.Server.CORS.AllowMethods, ","),
-		AllowCredentials: config.Server.CORS.AllowCredentials,
-	})
-	app.Use(corsContext)
+	if config.Server.CORS.AllowOrigin != "" {
+		// Set CORS context
+		corsContext := cors.New(cors.Options{
+			AllowedOrigins:   strings.Split(config.Server.CORS.AllowOrigin, ","),
+			AllowedMethods:   strings.Split(config.Server.CORS.AllowMethods, ","),
+			AllowCredentials: config.Server.CORS.AllowCredentials,
+		})
+		app.Use(corsContext)
+	}
 
 	app.Use(sess.Handler())
 
