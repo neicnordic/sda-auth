@@ -128,7 +128,7 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 
 		if ok {
 			log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
-			token, expDate := generateJwtToken(auth.Config.Cega.JwtIssuer, username, auth.Config.Cega.JwtPrivateKey, auth.Config.Cega.JwtSignatureAlg)
+			token, expDate := generateJwtTokenEGA(auth.Config.Cega.JwtIssuer, username, auth.Config.Cega.JwtPrivateKey, auth.Config.Cega.JwtSignatureAlg)
 			s3conf := getS3ConfigMap(token, auth.Config.S3Inbox, username)
 			idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 			s.SetFlash("ega", s3conf)

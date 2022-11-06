@@ -55,7 +55,7 @@ func verifyPassword(password, hash string) bool {
 }
 
 // Return base64 encoded credentials for basic auth
-func generateJwtToken(issuer, sub, key, alg string) (string, string) {
+func generateJwtTokenEGA(issuer, sub, key, alg string) (string, string) {
 	// Create a new token object by specifying signing method and the needed claims
 
 	ttl := 200 * time.Hour

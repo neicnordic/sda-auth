@@ -121,7 +121,7 @@ func (suite *CegaTests) TestVerifyPassword() {
 // This test isn't good, as the generateJwtToken function calls log.Fatal
 // instead of returning an error. There are hacks to catch this, but we should
 // take the time to rewrite the functions instead.
-func (suite *CegaTests) TestGgenerateJwtToken() {
+func (suite *CegaTests) TestGgenerateJwtTokenEGA() {
 
 	type KeyAlgo struct {
 		Keyfile   string
@@ -136,7 +136,7 @@ func (suite *CegaTests) TestGgenerateJwtToken() {
 
 	for _, test := range algorithms {
 
-		_, expiration := generateJwtToken(issuer, subject, test.Keyfile, test.Algorithm)
+		_, expiration := generateJwtTokenEGA(issuer, subject, test.Keyfile, test.Algorithm)
 
 		// We should check that we can parse the token, but jwt.Parse does not
 		// like our tokens, and I don't understand them that well, so for now I
