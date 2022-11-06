@@ -6,8 +6,10 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
@@ -128,11 +130,24 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 
 		if ok {
 			log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
-			token, expDate := generateJwtTokenEGA(auth.Config.Cega.JwtIssuer, username, auth.Config.Cega.JwtPrivateKey, auth.Config.Cega.JwtSignatureAlg)
+			claims := &Claims{
+				username,
+				"",
+				jwt.RegisteredClaims{
+					IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+					Issuer:   auth.Config.JwtIssuer,
+					Subject:  username,
+				},
+			}
+			token, expDate, err := generateJwtToken(claims, auth.Config.JwtPrivateKey, auth.Config.JwtSignatureAlg)
+			if err != nil {
+				log.Errorf("error when generating token: %v", err)
+			}
+
 			s3conf := getS3ConfigMap(token, auth.Config.S3Inbox, username)
 			idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 			s.SetFlash("ega", s3conf)
-			err := ctx.View("ega.html", idStruct)
+			err = ctx.View("ega.html", idStruct)
 			if err != nil {
 				log.Error("Failed to parse response: ", err)
 
