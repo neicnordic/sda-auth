@@ -47,10 +47,13 @@ type ServerConfig struct {
 
 // Config is a parent object for all the different configuration parts
 type Config struct {
-	Elixir  ElixirConfig
-	Cega    CegaConfig
-	Server  ServerConfig
-	S3Inbox string
+	Elixir          ElixirConfig
+	Cega            CegaConfig
+	JwtIssuer       string
+	JwtPrivateKey   string
+	JwtSignatureAlg string
+	Server          ServerConfig
+	S3Inbox         string
 }
 
 // NewConfig initializes and parses the config file and/or environment using
@@ -65,6 +68,12 @@ func NewConfig() *Config {
 }
 
 func (c *Config) readConfig() {
+	if ! (viper.IsSet("JwtPrivateKey") || viper.IsSet("JwtSignatureAlg")) {
+		log.Fatalf("JWT signing key and type must be set")
+	}
+	c.JwtPrivateKey = viper.GetString("JwtPrivateKey")
+	c.JwtSignatureAlg = viper.GetString("JwtSignatureAlg")
+	c.JwtIssuer = viper.GetString("jwtIssuer")
 
 	// Setup elixir
 	elixir := ElixirConfig{}
