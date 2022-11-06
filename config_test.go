@@ -49,9 +49,9 @@ func (suite *ConfigTests) SetupTest() {
 	}
 
 	suite.CegaConfig = CegaConfig{
-		AuthURL:         "http://cega/auth",
-		ID:              "cegaID",
-		Secret:          "cegaSecret",
+		AuthURL: "http://cega/auth",
+		ID:      "cegaID",
+		Secret:  "cegaSecret",
 	}
 
 	suite.ServerConfig = ServerConfig{
@@ -134,7 +134,6 @@ func (suite *ConfigTests) TestConfig() {
 	assert.Equal(suite.T(), suite.JwtIssuer, config.JwtIssuer, "CEGA JwtIssuer misread from config file")
 	assert.Equal(suite.T(), suite.JwtPrivateKey, config.JwtPrivateKey, "CEGA JwtPrivateKey misread from config file")
 	assert.Equal(suite.T(), suite.JwtSignatureAlg, config.JwtSignatureAlg, "CEGA JwtSignatureAlg misread from config file")
-	
 
 	// sanitycheck without config file or ENVs
 	// this should fail
@@ -153,9 +152,6 @@ func (suite *ConfigTests) TestConfig() {
 
 	os.Setenv("CEGA_ID", fmt.Sprintf("env_%v", suite.CegaConfig.ID))
 	os.Setenv("CEGA_AUTHURL", fmt.Sprintf("env_%v", suite.CegaConfig.AuthURL))
-	os.Setenv("CEGA_JWTISSUER", fmt.Sprintf("env_%v", suite.CegaConfig.JwtIssuer))
-	os.Setenv("CEGA_JWTPRIVATEKEY", fmt.Sprintf("env_%v", suite.CegaConfig.JwtPrivateKey))
-	os.Setenv("CEGA_JWTSIGNATUREALG", fmt.Sprintf("env_%v", suite.CegaConfig.JwtSignatureAlg))
 	os.Setenv("CEGA_SECRET", fmt.Sprintf("env_%v", suite.CegaConfig.Secret))
 
 	os.Setenv("SERVER_CERT", fmt.Sprintf("env_%v", suite.ServerConfig.Cert))
@@ -180,13 +176,14 @@ func (suite *ConfigTests) TestConfig() {
 
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.ID), config.Cega.ID, "CEGA ID misread from environment variable")
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.AuthURL), config.Cega.AuthURL, "CEGA AuthURL misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.JwtIssuer), config.Cega.JwtIssuer, "CEGA JwtIssuer misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.JwtPrivateKey), config.Cega.JwtPrivateKey, "CEGA JwtPrivateKey misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.JwtSignatureAlg), config.Cega.JwtSignatureAlg, "CEGA JwtSignatureAlg misread from environment variable")
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.Secret), config.Cega.Secret, "CEGA Secret misread from environment variable")
 
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ServerConfig.Cert), config.Server.Cert, "ServerConfig Cert misread from environment variable")
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ServerConfig.Key), config.Server.Key, "ServerConfig Key misread from environment variable")
 
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.S3Inbox), config.S3Inbox, "S3Inbox misread from environment variable")
+
+	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtIssuer), config.JwtIssuer, "CEGA JwtIssuer misread from environment variable")
+	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtPrivateKey), config.JwtPrivateKey, "CEGA JwtPrivateKey misread from environment variable")
+	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtSignatureAlg), config.JwtSignatureAlg, "CEGA JwtSignatureAlg misread from environment variable")
 }

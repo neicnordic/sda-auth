@@ -23,12 +23,9 @@ type ElixirConfig struct {
 
 // CegaConfig stores information about the cega endpoint
 type CegaConfig struct {
-	AuthURL         string
-	ID              string
-	JwtIssuer       string
-	JwtPrivateKey   string
-	JwtSignatureAlg string
-	Secret          string
+	AuthURL string
+	ID      string
+	Secret  string
 }
 
 // CORSConfig stores information about cross-origin resource sharing
@@ -113,9 +110,6 @@ func (c *Config) readConfig() error {
 
 	cega.AuthURL = viper.GetString("cega.authUrl")
 	cega.ID = viper.GetString("cega.id")
-	cega.JwtIssuer = viper.GetString("cega.jwtIssuer")
-	cega.JwtPrivateKey = viper.GetString("cega.jwtPrivateKey")
-	cega.JwtSignatureAlg = viper.GetString("cega.jwtSignatureAlg")
 	cega.Secret = viper.GetString("cega.secret")
 
 	c.Cega = cega

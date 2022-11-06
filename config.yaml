@@ -14,9 +14,6 @@ elixir:
 cega:
   authUrl: "http://cega:8443/lega/v1/legas/users/"
   id: "dummy"
-  jwtIssuer: "http://auth:8080"
-  jwtPrivateKey: "keys/sign-jwt.key"
-  jwtSignatureAlg: "ES256"
   secret: "dummy"
 server:
   # do not use TLS until certs are fixed
