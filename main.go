@@ -247,13 +247,20 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 		return nil
 	}
 
-	tokenEGA, expDate, err := generateJwtFromElixir(idStruct, auth.Config.Elixir.JwtPrivateKey, auth.Config.Elixir.JwtSignatureAlg, auth.Config.Elixir.RedirectURL, auth.Config.Elixir.jwkUrl)
+	claims := &Claims{
+		idStruct.Email,
+		"",
+		jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+			Issuer:   auth.Config.JwtIssuer,
+			Subject:  idStruct.User,
+		},
+	}
+	token, expDate, err := generateJwtToken(claims, auth.Config.JwtPrivateKey, auth.Config.JwtSignatureAlg)
 	if err != nil {
 		log.Errorf("error when generating token: %v", err)
-
-		return nil
 	}
-	idStruct.Token = tokenEGA
+	idStruct.Token = token
 	idStruct.ExpDate = expDate
 
 	log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
