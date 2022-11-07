@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path"
 	"strings"
 
@@ -58,19 +59,36 @@ type Config struct {
 
 // NewConfig initializes and parses the config file and/or environment using
 // the viper library.
-func NewConfig() *Config {
-	parseConfig()
+func NewConfig() (*Config, error) {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetConfigType("yaml")
+	if viper.IsSet("server.confPath") {
+		cp := viper.GetString("server.confPath")
+		ss := strings.Split(strings.TrimLeft(cp, "/"), "/")
+		viper.AddConfigPath(path.Join(ss...))
+	}
+	if viper.IsSet("server.confFile") {
+		viper.SetConfigFile(viper.GetString("server.confFile"))
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Infoln("No config file found, using ENVs only")
+		} else {
+			return nil, err
+		}
+	}
 
 	c := &Config{}
-	c.readConfig()
+	err := c.readConfig()
 
-	return c
+	return c, err
 }
 
-func (c *Config) readConfig() {
-	if ! (viper.IsSet("JwtPrivateKey") || viper.IsSet("JwtSignatureAlg")) {
-		log.Fatalf("JWT signing key and type must be set")
-	}
+func (c *Config) readConfig() error {
 	c.JwtPrivateKey = viper.GetString("JwtPrivateKey")
 	c.JwtSignatureAlg = viper.GetString("JwtSignatureAlg")
 	c.JwtIssuer = viper.GetString("jwtIssuer")
@@ -148,28 +166,12 @@ func (c *Config) readConfig() {
 		log.SetLevel(intLevel)
 		log.Printf("Setting log level to '%s'", stringLevel)
 	}
-}
 
-func parseConfig() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.SetConfigType("yaml")
-	if viper.IsSet("server.confPath") {
-		cp := viper.GetString("server.confPath")
-		ss := strings.Split(strings.TrimLeft(cp, "/"), "/")
-		viper.AddConfigPath(path.Join(ss...))
-	}
-	if viper.IsSet("server.confFile") {
-		viper.SetConfigFile(viper.GetString("server.confFile"))
-	}
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Infoln("No config file found, using ENVs only")
-		} else {
-			log.Fatalf("Error when reading config file: '%s'", err)
+	for _, s := range []string{"jwtIssuer", "JwtPrivateKey", "JwtSignatureAlg", "s3Inbox"} {
+		if viper.GetString(s) == "" {
+			return fmt.Errorf("%s not set", s)
 		}
 	}
+
+	return nil
 }

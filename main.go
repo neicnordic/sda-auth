@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -303,7 +304,11 @@ func (auth AuthHandler) getElixirConf(ctx iris.Context) {
 func main() {
 
 	// Initialise config
-	config := NewConfig()
+	config, err := NewConfig()
+	if err != nil {
+		log.Errorf("Failed to generate config, reason: %v", err)
+		os.Exit(1)
+	}
 
 	// Initialise OIDC client
 	oauth2Config, provider := getOidcClient(config.Elixir)
@@ -352,7 +357,6 @@ func main() {
 	app.Get("/elixir/login", authHandler.getElixirLogin)
 	app.Get("/elixir/cors_login", authHandler.getElixirCORSLogin)
 
-	var err error
 	if config.Server.Cert != "" && config.Server.Key != "" {
 
 		log.Infoln("Serving content using https")
