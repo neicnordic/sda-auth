@@ -39,13 +39,11 @@ func (suite *ConfigTests) SetupTest() {
 
 	// config values to write to the config file
 	suite.ElixirConfig = ElixirConfig{
-		ID:              "elixirTestID",
-		Issuer:          "elixirTestIssuer",
-		RedirectURL:     "http://elixir/login",
-		RevocationURL:   "http://elixir/revoke",
-		Secret:          "elixirTestSecret",
-		JwtPrivateKey:   "elixirKey.file",
-		JwtSignatureAlg: "elixirSigAlg",
+		ID:            "elixirTestID",
+		Provider:      "elixirTestIssuer",
+		RedirectURL:   "http://elixir/login",
+		RevocationURL: "http://elixir/revoke",
+		Secret:        "elixirTestSecret",
 	}
 
 	suite.CegaConfig = CegaConfig{
@@ -112,11 +110,9 @@ func (suite *ConfigTests) TestConfig() {
 
 	// Check elixir values
 	assert.Equal(suite.T(), suite.ElixirConfig.ID, config.Elixir.ID, "Elixir ID misread from config file")
-	assert.Equal(suite.T(), suite.ElixirConfig.Issuer, config.Elixir.Issuer, "Elixir Issuer misread from config file")
+	assert.Equal(suite.T(), suite.ElixirConfig.Provider, config.Elixir.Provider, "Elixir Issuer misread from config file")
 	assert.Equal(suite.T(), suite.ElixirConfig.RedirectURL, config.Elixir.RedirectURL, "Elixir RedirectURL misread from config file")
 	assert.Equal(suite.T(), suite.ElixirConfig.Secret, config.Elixir.Secret, "Elixir Secret misread from config file")
-	assert.Equal(suite.T(), suite.ElixirConfig.JwtPrivateKey, config.Elixir.JwtPrivateKey, "Elixir JwtPrivateKey misread from config file")
-	assert.Equal(suite.T(), suite.ElixirConfig.JwtSignatureAlg, config.Elixir.JwtSignatureAlg, "Elixir JwtSignatureAlg misread from config file")
 
 	// Check CEGA values
 	assert.Equal(suite.T(), suite.CegaConfig.ID, config.Cega.ID, "CEGA ID misread from config file")
@@ -144,11 +140,9 @@ func (suite *ConfigTests) TestConfig() {
 
 	// Set all values as environment variables
 	os.Setenv("ELIXIR_ID", fmt.Sprintf("env_%v", suite.ElixirConfig.ID))
-	os.Setenv("ELIXIR_ISSUER", fmt.Sprintf("env_%v", suite.ElixirConfig.Issuer))
+	os.Setenv("ELIXIR_PROVIDER", fmt.Sprintf("env_%v", suite.ElixirConfig.Provider))
 	os.Setenv("ELIXIR_REDIRECTURL", fmt.Sprintf("env_%v", suite.ElixirConfig.RedirectURL))
 	os.Setenv("ELIXIR_SECRET", fmt.Sprintf("env_%v", suite.ElixirConfig.Secret))
-	os.Setenv("ELIXIR_JWTPRIVATEKEY", fmt.Sprintf("env_%v", suite.ElixirConfig.JwtPrivateKey))
-	os.Setenv("ELIXIR_JWTSIGNATUREALG", fmt.Sprintf("env_%v", suite.ElixirConfig.JwtSignatureAlg))
 
 	os.Setenv("CEGA_ID", fmt.Sprintf("env_%v", suite.CegaConfig.ID))
 	os.Setenv("CEGA_AUTHURL", fmt.Sprintf("env_%v", suite.CegaConfig.AuthURL))
@@ -168,11 +162,9 @@ func (suite *ConfigTests) TestConfig() {
 	assert.NoError(suite.T(), err)
 
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.ID), config.Elixir.ID, "Elixir ID misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.Issuer), config.Elixir.Issuer, "Elixir Issuer misread from environment variable")
+	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.Provider), config.Elixir.Provider, "Elixir Issuer misread from environment variable")
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.RedirectURL), config.Elixir.RedirectURL, "Elixir RedirectURL misread from environment variable")
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.Secret), config.Elixir.Secret, "Elixir Secret misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.JwtPrivateKey), config.Elixir.JwtPrivateKey, "Elixir JwtPrivateKey misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.ElixirConfig.JwtSignatureAlg), config.Elixir.JwtSignatureAlg, "Elixir JwtSignatureAlg misread from environment variable")
 
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.ID), config.Cega.ID, "CEGA ID misread from environment variable")
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.CegaConfig.AuthURL), config.Cega.AuthURL, "CEGA AuthURL misread from environment variable")

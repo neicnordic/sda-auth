@@ -8,8 +8,6 @@ elixir:
   redirectUri: "http://oidc:31111/elixir/login"
   revocationUrl: "http://oidc:9090"
   secret: "wHPVQaYXmdDHg"
-  jwtPrivateKey: "keys/sign-rsa-jwt.key"
-  jwtSignatureAlg: "RS256"
   jwkPath: "/jwks"
 cega:
   authUrl: "http://cega:8443/lega/v1/legas/users/"
