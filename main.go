@@ -371,7 +371,13 @@ func main() {
 	} else {
 
 		log.Infoln("Serving content using http")
-		server := &http.Server{Addr: "0.0.0.0:8080"}
+		server := &http.Server{
+			Addr:              "0.0.0.0:8080",
+			ReadTimeout:       5 * time.Second,
+			WriteTimeout:      5 * time.Second,
+			IdleTimeout:       30 * time.Second,
+			ReadHeaderTimeout: 3 * time.Second,
+		}
 		err = app.Run(iris.Server(server))
 	}
 	if err != nil {
