@@ -1,6 +1,6 @@
 module auth
 
-go 1.17
+go 1.19
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
