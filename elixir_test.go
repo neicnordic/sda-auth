@@ -7,7 +7,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -42,13 +41,13 @@ func (suite *ElixirTests) SetupTest() {
 	}
 
 	// Create a temporary directory for our config file
-	suite.TempDir, err = ioutil.TempDir(os.TempDir(), "sda-auth-test-")
+	suite.TempDir, err = os.MkdirTemp(os.TempDir(), "sda-auth-test-")
 	if err != nil {
 		log.Fatal("Couldn't create temporary test directory", err)
 	}
 
 	// Create RSA private key file
-	suite.RSAKeyFile, err = ioutil.TempFile(suite.TempDir, "rsakey-")
+	suite.RSAKeyFile, err = os.CreateTemp(suite.TempDir, "rsakey-")
 	if err != nil {
 		log.Fatal("Cannot create temporary rsa key file", err)
 	}
@@ -70,7 +69,7 @@ func (suite *ElixirTests) SetupTest() {
 	}
 
 	// Create EC private key file
-	suite.ECKeyFile, err = ioutil.TempFile(suite.TempDir, "eckey-")
+	suite.ECKeyFile, err = os.CreateTemp(suite.TempDir, "eckey-")
 	if err != nil {
 		log.Fatal("Cannot create temporary ec key file", err)
 	}
