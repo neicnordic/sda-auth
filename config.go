@@ -16,7 +16,7 @@ type ElixirConfig struct {
 	RedirectURL   string
 	RevocationURL string
 	Secret        string
-	jwkUrl        string
+	jwkURL        string
 }
 
 // CegaConfig stores information about the cega endpoint
@@ -96,7 +96,7 @@ func (c *Config) readConfig() error {
 	elixir.RedirectURL = viper.GetString("elixir.redirectUrl")
 	elixir.Secret = viper.GetString("elixir.secret")
 	if viper.IsSet("elixir.jwkPath") {
-		elixir.jwkUrl = elixir.Provider + viper.GetString("elixir.jwkPath")
+		elixir.jwkURL = elixir.Provider + viper.GetString("elixir.jwkPath")
 	}
 
 	c.Elixir = elixir
