@@ -34,7 +34,7 @@ class TestElixirAuth(unittest.TestCase):
         oidc_url = f'http://oidc:9090/interaction/{grant_id}/submit'
         cookies = {"_grant": grant_id}
         creds_payload = {"view":'login',
-                         "login":'dummy',
+                         "login":'dummy@example.com',
                          "password":'dummy',
                          "submit": ''}
 
@@ -63,7 +63,7 @@ class TestEGAAuth(unittest.TestCase):
 
     def test_valid_ega_login(self):
         """Test that the login is successful."""
-        creds_payload = { "username":'dummy',
+        creds_payload = { "username":'dummy@example.com',
                          "password":'dummy',
                          "submit": 'log+in' }
 
@@ -78,7 +78,7 @@ class TestEGAAuth(unittest.TestCase):
 
     def test_invalid_ega_login(self):
         """Test that the login is not successful."""
-        creds_payload = { "username":'dummy',
+        creds_payload = { "username":'dummy@foo.bar',
                          "password":'wrongpassword',
                          "submit": 'log+in' }
 
