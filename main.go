@@ -234,7 +234,7 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 	}
 
 	code := ctx.Request().URL.Query().Get("code")
-	idStruct, err := authenticateWithOidc(auth.OAuth2Config, auth.OIDCProvider, code)
+	idStruct, err := authenticateWithOidc(auth.OAuth2Config, auth.OIDCProvider, code, auth.Config.Elixir.jwkURL)
 	if err != nil {
 		log.WithFields(log.Fields{"authType": "elixir"}).Errorf("Auhentication failed: %s", err)
 		_, err := ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")

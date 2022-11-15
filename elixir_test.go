@@ -135,10 +135,11 @@ func (suite *ElixirTests) TestAuthenticateWithOidc() {
 		log.Error(err)
 	}
 	code := session.SessionID
+	jwkURL := suite.mockServer.JWKSEndpoint()
 
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
 
-	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, code)
+	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, code, jwkURL)
 	assert.Nil(suite.T(), err, "Failed to authenticate with OIDC")
 	assert.NotEqual(suite.T(), "", elixirIdentity.Token, "Empty token returned from OIDC authentication")
 }
@@ -149,7 +150,8 @@ func (suite *ElixirTests) TestValidateJwt() {
 		log.Error(err)
 	}
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	jwkURL := suite.mockServer.JWKSEndpoint()
+	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID, jwkURL)
 	elixirJWT := elixirIdentity.Token
 
 	// Create HS256 test token

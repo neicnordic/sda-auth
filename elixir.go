@@ -41,7 +41,7 @@ func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 }
 
 // Authenticate with an Oidc client.against Elixir AAI
-func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, code string) (ElixirIdentity, error) {
+func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, code, jwkURL string) (ElixirIdentity, error) {
 
 	contx := context.Background()
 	defer contx.Done()
@@ -60,6 +60,11 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 		log.Error("Failed to extract a valid id token from OAuth2 token")
 
 		return idStruct, err
+	}
+
+	_, err = validateToken(rawIDToken, jwkURL)
+	if err != nil {
+		return idStruct, fmt.Errorf("could not validate raw jwt against pub key, reason: %v", err)
 	}
 
 	var verifier = provider.Verifier(&oidc.Config{ClientID: oauth2Config.ClientID})
