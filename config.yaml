@@ -8,18 +8,16 @@ elixir:
   redirectUri: "http://oidc:31111/elixir/login"
   revocationUrl: "http://oidc:9090"
   secret: "wHPVQaYXmdDHg"
-  jwtPrivateKey: "keys/sign-rsa-jwt.key"
-  jwtSignatureAlg: "RS256"
   jwkPath: "/jwks"
 cega:
   authUrl: "http://cega:8443/lega/v1/legas/users/"
   id: "dummy"
-  jwtIssuer: "http://auth:8080"
-  jwtPrivateKey: "keys/sign-jwt.key"
-  jwtSignatureAlg: "ES256"
   secret: "dummy"
 server:
   # do not use TLS until certs are fixed
   # cert: "keys/cert.pem"
   # key: "keys/key.pem"
 s3Inbox: "s3.example.com"
+jwtIssuer: "http://auth:8080"
+jwtPrivateKey: "keys/sign-jwt.key"
+jwtSignatureAlg: "ES256"

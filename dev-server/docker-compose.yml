@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   oidc:
     container_name: oidc
@@ -47,26 +46,26 @@ services:
         GOLANG_VERSION: ${GOLANG_VERSION-1.18}
       dockerfile: Dockerfile
     depends_on:
-      - oidc
-      - cega
+      oidc:
+        condition: service_started
+      cega:
+        condition: service_started
     environment:
       - ELIXIR_ID=XC56EL11xx
-      - ELIXIR_ISSUER=http://oidc:9090
+      - ELIXIR_PROVIDER=http://oidc:9090
       - ELIXIR_SECRET=wHPVQaYXmdDHg
-      - ELIXIR_JWTPRIVATEKEY=keys/sign-rsa-jwt.key
-      - ELIXIR_JWTSIGNATUREALG=RS256
       - ELIXIR_JWKPATH=/jwks
       - CEGA_AUTHURL=http://cega:8443/lega/v1/legas/users/
       - CEGA_ID=dummy
-      - CEGA_JWTISSUER=http://auth:8080
-      - CEGA_JWTPRIVATEKEY=keys/sign-jwt.key
-      - CEGA_JWTSIGNATUREALG=ES256
       - CEGA_SECRET=dummy
       - CORS_ORIGINS=http://localhost:8080
       - CORS_METHODS=GET,POST, OPTIONS
       - CORS_CREDENTIALS=TRUE
       - LOG_LEVEL=info
       - S3INBOX=s3.example.com
+      - JWTISSUER=http://auth:8080
+      - JWTPRIVATEKEY=keys/sign-jwt.key
+      - JWTSIGNATUREALG=ES256
     volumes:
       - ../keys:/keys
       - ../:/sda-auth

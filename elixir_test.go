@@ -7,12 +7,8 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
-	"io/ioutil"
 	"os"
-	"strconv"
 	"testing"
-	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/oauth2-proxy/mockoidc"
@@ -45,13 +41,13 @@ func (suite *ElixirTests) SetupTest() {
 	}
 
 	// Create a temporary directory for our config file
-	suite.TempDir, err = ioutil.TempDir(os.TempDir(), "sda-auth-test-")
+	suite.TempDir, err = os.MkdirTemp(os.TempDir(), "sda-auth-test-")
 	if err != nil {
 		log.Fatal("Couldn't create temporary test directory", err)
 	}
 
 	// Create RSA private key file
-	suite.RSAKeyFile, err = ioutil.TempFile(suite.TempDir, "rsakey-")
+	suite.RSAKeyFile, err = os.CreateTemp(suite.TempDir, "rsakey-")
 	if err != nil {
 		log.Fatal("Cannot create temporary rsa key file", err)
 	}
@@ -73,7 +69,7 @@ func (suite *ElixirTests) SetupTest() {
 	}
 
 	// Create EC private key file
-	suite.ECKeyFile, err = ioutil.TempFile(suite.TempDir, "eckey-")
+	suite.ECKeyFile, err = os.CreateTemp(suite.TempDir, "eckey-")
 	if err != nil {
 		log.Fatal("Cannot create temporary ec key file", err)
 	}
@@ -99,12 +95,10 @@ func (suite *ElixirTests) SetupTest() {
 
 	// create an elixir config that has the needed endpoints set
 	suite.ElixirConfig = ElixirConfig{
-		ID:              suite.mockServer.ClientID,
-		Issuer:          suite.mockServer.Issuer(),
-		RedirectURL:     "http://redirect",
-		Secret:          suite.mockServer.ClientSecret,
-		JwtPrivateKey:   "testPrivateKey",
-		JwtSignatureAlg: "testAlg",
+		ID:          suite.mockServer.ClientID,
+		Provider:    suite.mockServer.Issuer(),
+		RedirectURL: "http://redirect",
+		Secret:      suite.mockServer.ClientSecret,
 	}
 }
 
@@ -141,93 +135,13 @@ func (suite *ElixirTests) TestAuthenticateWithOidc() {
 		log.Error(err)
 	}
 	code := session.SessionID
+	jwkURL := suite.mockServer.JWKSEndpoint()
 
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
 
-	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, code)
+	elixirIdentity, err := authenticateWithOidc(oauth2Config, provider, code, jwkURL)
 	assert.Nil(suite.T(), err, "Failed to authenticate with OIDC")
 	assert.NotEqual(suite.T(), "", elixirIdentity.Token, "Empty token returned from OIDC authentication")
-}
-
-func (suite *ElixirTests) TestGenerateJwtFromElixirRSA() {
-	var (
-		EGAclaims jwt.MapClaims
-		JWTRSAalg = "RS256"
-	)
-
-	session, err := suite.mockServer.SessionStore.NewSession("openid email profile", "nonce", mockoidc.DefaultUser(), "", "")
-	if err != nil {
-		log.Error(err)
-	}
-	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
-	elixirJWT := elixirIdentity.Token
-
-	idStruct := ElixirIdentity{
-		User:     "",
-		Token:    elixirJWT,
-		Passport: nil,
-		Profile:  "Dummy Tester",
-		Email:    "dummy.tester@gs.uu.se",
-	}
-	tokenEGA, _, err := generateJwtFromElixir(idStruct, suite.RSAKeyFile.Name(), JWTRSAalg, "http://test.login.org/elixir/login", suite.mockServer.JWKSEndpoint())
-	assert.Nil(suite.T(), err)
-	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
-	EGAclaims, ok := token.Claims.(jwt.MapClaims)
-	assert.True(suite.T(), ok)
-
-	expDateStr := fmt.Sprintf("%.0f", EGAclaims["exp"])
-	expDateInt, err := strconv.ParseInt(expDateStr, 10, 64)
-	assert.Nil(suite.T(), err)
-
-	assert.Equal(suite.T(), expDateInt, time.Now().Add(170*time.Hour).Unix())
-
-	assert.Equal(suite.T(), idStruct.Profile, EGAclaims["name"])
-
-	assert.Equal(suite.T(), idStruct.Email, EGAclaims["email"])
-
-	defer os.Remove("keys/sign-rsa-jwt.key")
-}
-
-func (suite *ElixirTests) TestGenerateJwtFromElixirEC() {
-	var (
-		EGAclaims jwt.MapClaims
-		JWTalg    = "ES256"
-	)
-
-	session, err := suite.mockServer.SessionStore.NewSession("openid email profile", "nonce", mockoidc.DefaultUser(), "", "")
-	if err != nil {
-		log.Error(err)
-	}
-	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
-	elixirJWT := elixirIdentity.Token
-
-	idStruct := ElixirIdentity{
-		User:     "",
-		Token:    elixirJWT,
-		Passport: nil,
-		Profile:  "Dummy Tester",
-		Email:    "dummy.tester@gs.uu.se",
-	}
-	tokenEGA, _, err := generateJwtFromElixir(idStruct, suite.ECKeyFile.Name(), JWTalg, "http://test.login.org/elixir/login", suite.mockServer.JWKSEndpoint())
-	assert.Nil(suite.T(), err)
-
-	token, _ := jwt.Parse(tokenEGA, func(tokenEGA *jwt.Token) (interface{}, error) { return nil, nil })
-	EGAclaims, ok := token.Claims.(jwt.MapClaims)
-	assert.True(suite.T(), ok)
-
-	expDateStr := fmt.Sprintf("%.0f", EGAclaims["exp"])
-	expDateInt, err := strconv.ParseInt(expDateStr, 10, 64)
-	assert.Nil(suite.T(), err)
-
-	assert.Equal(suite.T(), expDateInt, time.Now().Add(170*time.Hour).Unix())
-
-	assert.Equal(suite.T(), idStruct.Profile, EGAclaims["name"])
-
-	assert.Equal(suite.T(), idStruct.Email, EGAclaims["email"])
-
-	defer os.Remove("keys/sign-ecdsa-jwt.key")
 }
 
 func (suite *ElixirTests) TestValidateJwt() {
@@ -236,7 +150,8 @@ func (suite *ElixirTests) TestValidateJwt() {
 		log.Error(err)
 	}
 	oauth2Config, provider := getOidcClient(suite.ElixirConfig)
-	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID)
+	jwkURL := suite.mockServer.JWKSEndpoint()
+	elixirIdentity, _ := authenticateWithOidc(oauth2Config, provider, session.SessionID, jwkURL)
 	elixirJWT := elixirIdentity.Token
 
 	// Create HS256 test token

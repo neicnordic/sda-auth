@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/coreos/go-oidc"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
@@ -128,11 +131,24 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 
 		if ok {
 			log.WithFields(log.Fields{"authType": "cega", "user": username}).Info("Valid password entered by user")
-			token, expDate := generateJwtToken(auth.Config.Cega.JwtIssuer, username, auth.Config.Cega.JwtPrivateKey, auth.Config.Cega.JwtSignatureAlg)
+			claims := &Claims{
+				username,
+				"",
+				jwt.RegisteredClaims{
+					IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+					Issuer:   auth.Config.JwtIssuer,
+					Subject:  username,
+				},
+			}
+			token, expDate, err := generateJwtToken(claims, auth.Config.JwtPrivateKey, auth.Config.JwtSignatureAlg)
+			if err != nil {
+				log.Errorf("error when generating token: %v", err)
+			}
+
 			s3conf := getS3ConfigMap(token, auth.Config.S3Inbox, username)
 			idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 			s.SetFlash("ega", s3conf)
-			err := ctx.View("ega.html", idStruct)
+			err = ctx.View("ega.html", idStruct)
 			if err != nil {
 				log.Error("Failed to parse response: ", err)
 
@@ -218,7 +234,7 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 	}
 
 	code := ctx.Request().URL.Query().Get("code")
-	idStruct, err := authenticateWithOidc(auth.OAuth2Config, auth.OIDCProvider, code)
+	idStruct, err := authenticateWithOidc(auth.OAuth2Config, auth.OIDCProvider, code, auth.Config.Elixir.jwkURL)
 	if err != nil {
 		log.WithFields(log.Fields{"authType": "elixir"}).Errorf("Auhentication failed: %s", err)
 		_, err := ctx.Writef("Authentication failed. You may need to clear your session cookies and try again.")
@@ -231,13 +247,20 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 		return nil
 	}
 
-	tokenEGA, expDate, err := generateJwtFromElixir(idStruct, auth.Config.Elixir.JwtPrivateKey, auth.Config.Elixir.JwtSignatureAlg, auth.Config.Elixir.RedirectURL, auth.Config.Elixir.jwkUrl)
+	claims := &Claims{
+		idStruct.Email,
+		"",
+		jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+			Issuer:   auth.Config.JwtIssuer,
+			Subject:  idStruct.User,
+		},
+	}
+	token, expDate, err := generateJwtToken(claims, auth.Config.JwtPrivateKey, auth.Config.JwtSignatureAlg)
 	if err != nil {
 		log.Errorf("error when generating token: %v", err)
-
-		return nil
 	}
-	idStruct.Token = tokenEGA
+	idStruct.Token = token
 	idStruct.ExpDate = expDate
 
 	log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
@@ -288,7 +311,11 @@ func (auth AuthHandler) getElixirConf(ctx iris.Context) {
 func main() {
 
 	// Initialise config
-	config := NewConfig()
+	config, err := NewConfig()
+	if err != nil {
+		log.Errorf("Failed to generate config, reason: %v", err)
+		os.Exit(1)
+	}
 
 	// Initialise OIDC client
 	oauth2Config, provider := getOidcClient(config.Elixir)
@@ -337,7 +364,6 @@ func main() {
 	app.Get("/elixir/login", authHandler.getElixirLogin)
 	app.Get("/elixir/cors_login", authHandler.getElixirCORSLogin)
 
-	var err error
 	if config.Server.Cert != "" && config.Server.Key != "" {
 
 		log.Infoln("Serving content using https")
@@ -345,7 +371,13 @@ func main() {
 	} else {
 
 		log.Infoln("Serving content using http")
-		server := &http.Server{Addr: "0.0.0.0:8080"}
+		server := &http.Server{
+			Addr:              "0.0.0.0:8080",
+			ReadTimeout:       5 * time.Second,
+			WriteTimeout:      5 * time.Second,
+			IdleTimeout:       30 * time.Second,
+			ReadHeaderTimeout: 3 * time.Second,
+		}
 		err = app.Run(iris.Server(server))
 	}
 	if err != nil {

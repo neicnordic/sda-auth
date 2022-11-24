@@ -3,12 +3,9 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/golang-jwt/jwt/v4"
 	log "github.com/sirupsen/logrus"
 	bcrypt "golang.org/x/crypto/bcrypt"
 )
@@ -52,52 +49,6 @@ func verifyPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 
 	return err == nil
-}
-
-// Return base64 encoded credentials for basic auth
-func generateJwtToken(issuer, sub, key, alg string) (string, string) {
-	// Create a new token object by specifying signing method and the needed claims
-
-	ttl := 200 * time.Hour
-	expireDate := time.Now().UTC().Add(ttl)
-	token := jwt.NewWithClaims(jwt.GetSigningMethod(alg), &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(expireDate),
-		Issuer:    issuer,
-		Subject:   sub,
-	})
-	data, err := ioutil.ReadFile(key)
-	var tokenString string
-
-	switch alg {
-	case "ES256":
-		pk, err := jwt.ParseECPrivateKeyFromPEM(data)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-		tokenString, err = token.SignedString(pk)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-	case "RS256":
-		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-		tokenString, err = token.SignedString(pk)
-		if err != nil {
-			log.Fatal(err, pk)
-		}
-	}
-
-	if err != nil {
-		log.Fatal(err, tokenString)
-	}
-	// Sign and get the complete encoded token
-	if err != nil {
-		log.Error("Token could not be fetched: ", err)
-	}
-
-	return tokenString, expireDate.Format("2006-01-02 15:04:05")
 }
 
 // Authenticate against CEGA

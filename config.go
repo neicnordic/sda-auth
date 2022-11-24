@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"path"
 	"strings"
 
@@ -10,24 +11,19 @@ import (
 
 // ElixirConfig stores the config about the elixir oidc endpoint
 type ElixirConfig struct {
-	ID              string
-	Issuer          string
-	RedirectURL     string
-	RevocationURL   string
-	Secret          string
-	JwtPrivateKey   string
-	JwtSignatureAlg string
-	jwkUrl          string
+	ID            string
+	Provider      string
+	RedirectURL   string
+	RevocationURL string
+	Secret        string
+	jwkURL        string
 }
 
 // CegaConfig stores information about the cega endpoint
 type CegaConfig struct {
-	AuthURL         string
-	ID              string
-	JwtIssuer       string
-	JwtPrivateKey   string
-	JwtSignatureAlg string
-	Secret          string
+	AuthURL string
+	ID      string
+	Secret  string
 }
 
 // CORSConfig stores information about cross-origin resource sharing
@@ -47,36 +43,60 @@ type ServerConfig struct {
 
 // Config is a parent object for all the different configuration parts
 type Config struct {
-	Elixir  ElixirConfig
-	Cega    CegaConfig
-	Server  ServerConfig
-	S3Inbox string
+	Elixir          ElixirConfig
+	Cega            CegaConfig
+	JwtIssuer       string
+	JwtPrivateKey   string
+	JwtSignatureAlg string
+	Server          ServerConfig
+	S3Inbox         string
 }
 
 // NewConfig initializes and parses the config file and/or environment using
 // the viper library.
-func NewConfig() *Config {
-	parseConfig()
+func NewConfig() (*Config, error) {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetConfigType("yaml")
+	if viper.IsSet("server.confPath") {
+		cp := viper.GetString("server.confPath")
+		ss := strings.Split(strings.TrimLeft(cp, "/"), "/")
+		viper.AddConfigPath(path.Join(ss...))
+	}
+	if viper.IsSet("server.confFile") {
+		viper.SetConfigFile(viper.GetString("server.confFile"))
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Infoln("No config file found, using ENVs only")
+		} else {
+			return nil, err
+		}
+	}
 
 	c := &Config{}
-	c.readConfig()
+	err := c.readConfig()
 
-	return c
+	return c, err
 }
 
-func (c *Config) readConfig() {
+func (c *Config) readConfig() error {
+	c.JwtPrivateKey = viper.GetString("JwtPrivateKey")
+	c.JwtSignatureAlg = viper.GetString("JwtSignatureAlg")
+	c.JwtIssuer = viper.GetString("jwtIssuer")
 
 	// Setup elixir
 	elixir := ElixirConfig{}
 
 	elixir.ID = viper.GetString("elixir.id")
-	elixir.Issuer = viper.GetString("elixir.issuer")
+	elixir.Provider = viper.GetString("elixir.provider")
 	elixir.RedirectURL = viper.GetString("elixir.redirectUrl")
 	elixir.Secret = viper.GetString("elixir.secret")
-	elixir.JwtPrivateKey = viper.GetString("elixir.jwtPrivateKey")
-	elixir.JwtSignatureAlg = viper.GetString("elixir.jwtSignatureAlg")
 	if viper.IsSet("elixir.jwkPath") {
-		elixir.jwkUrl = elixir.Issuer + viper.GetString("elixir.jwkPath")
+		elixir.jwkURL = elixir.Provider + viper.GetString("elixir.jwkPath")
 	}
 
 	c.Elixir = elixir
@@ -86,9 +106,6 @@ func (c *Config) readConfig() {
 
 	cega.AuthURL = viper.GetString("cega.authUrl")
 	cega.ID = viper.GetString("cega.id")
-	cega.JwtIssuer = viper.GetString("cega.jwtIssuer")
-	cega.JwtPrivateKey = viper.GetString("cega.jwtPrivateKey")
-	cega.JwtSignatureAlg = viper.GetString("cega.jwtSignatureAlg")
 	cega.Secret = viper.GetString("cega.secret")
 
 	c.Cega = cega
@@ -139,28 +156,12 @@ func (c *Config) readConfig() {
 		log.SetLevel(intLevel)
 		log.Printf("Setting log level to '%s'", stringLevel)
 	}
-}
 
-func parseConfig() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	viper.SetConfigType("yaml")
-	if viper.IsSet("server.confPath") {
-		cp := viper.GetString("server.confPath")
-		ss := strings.Split(strings.TrimLeft(cp, "/"), "/")
-		viper.AddConfigPath(path.Join(ss...))
-	}
-	if viper.IsSet("server.confFile") {
-		viper.SetConfigFile(viper.GetString("server.confFile"))
-	}
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Infoln("No config file found, using ENVs only")
-		} else {
-			log.Fatalf("Error when reading config file: '%s'", err)
+	for _, s := range []string{"jwtIssuer", "JwtPrivateKey", "JwtSignatureAlg", "s3Inbox"} {
+		if viper.GetString(s) == "" {
+			return fmt.Errorf("%s not set", s)
 		}
 	}
+
+	return nil
 }

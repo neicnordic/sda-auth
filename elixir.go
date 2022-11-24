@@ -1,11 +1,7 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
-	"net/url"
-	"time"
 
 	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt/v4"
@@ -28,7 +24,7 @@ type ElixirIdentity struct {
 // Configure an OpenID Connect aware OAuth2 client.
 func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 	contx := context.Background()
-	provider, err := oidc.NewProvider(contx, conf.Issuer)
+	provider, err := oidc.NewProvider(contx, conf.Provider)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,7 +41,7 @@ func getOidcClient(conf ElixirConfig) (oauth2.Config, *oidc.Provider) {
 }
 
 // Authenticate with an Oidc client.against Elixir AAI
-func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, code string) (ElixirIdentity, error) {
+func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, code, jwkURL string) (ElixirIdentity, error) {
 
 	contx := context.Background()
 	defer contx.Done()
@@ -64,6 +60,11 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 		log.Error("Failed to extract a valid id token from OAuth2 token")
 
 		return idStruct, err
+	}
+
+	_, err = validateToken(rawIDToken, jwkURL)
+	if err != nil {
+		return idStruct, fmt.Errorf("could not validate raw jwt against pub key, reason: %v", err)
 	}
 
 	var verifier = provider.Verifier(&oidc.Config{ClientID: oauth2Config.ClientID})
@@ -105,76 +106,6 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 	}
 
 	return idStruct, err
-}
-
-// Returns long-lived token and expiration date as strings
-func generateJwtFromElixir(idStruct ElixirIdentity, key, alg, iss, jwksURL string) (string, string, error) {
-	var (
-		elixirClaims   jwt.MapClaims
-		EGAtokenString string
-		token          *jwt.Token
-		err            error
-	)
-
-	if jwksURL == "" {
-		token, _ = jwt.Parse(idStruct.Token, func(tokenElixir *jwt.Token) (interface{}, error) { return nil, nil })
-	} else {
-		token, err = validateToken(idStruct.Token, jwksURL)
-		if err != nil {
-			return "", "", fmt.Errorf("could not validate raw jwt against pub key, reason: %v", err)
-		}
-		log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("Token was validated")
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		elixirClaims = claims
-	} else {
-		log.Error("Claims in token are empty")
-	}
-
-	u, err := url.Parse(iss)
-	if err != nil {
-
-		return "", "", fmt.Errorf("failed to parse ISS (jwt issuer field), %v", err)
-	}
-
-	data, err := ioutil.ReadFile(key)
-	if err != nil {
-
-		return "", "", err
-	}
-
-	ttl := 170 * time.Hour
-	dateDuration := time.Now().UTC().Add(ttl)
-	elixirClaims["exp"] = dateDuration.Unix()
-	elixirClaims["name"] = idStruct.Profile
-	elixirClaims["email"] = idStruct.Email
-	elixirClaims["iss"] = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
-	elixirClaims["kid"] = fmt.Sprintf("%x", sha256.Sum256(data))
-	EGAtoken := jwt.NewWithClaims(jwt.GetSigningMethod(alg), token.Claims)
-
-	switch alg {
-	case "ES256":
-		pk, err := jwt.ParseECPrivateKeyFromPEM(data)
-		if err != nil {
-			return "", "", err
-		}
-		EGAtokenString, err = EGAtoken.SignedString(pk)
-		if err != nil {
-			return "", "", err
-		}
-	case "RS256":
-		pk, err := jwt.ParseRSAPrivateKeyFromPEM(data)
-		if err != nil {
-			return "", "", err
-		}
-		EGAtokenString, err = EGAtoken.SignedString(pk)
-		if err != nil {
-			return "", "", err
-		}
-	}
-
-	return EGAtokenString, dateDuration.Format("2006-01-02 15:04:05"), nil
 }
 
 // Validate raw (Elixir) jwt against public key from jwk. Return parsed jwt.

@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.17, 1.18]
+        go-version: [1.19]
     steps:
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v3
@@ -22,5 +22,5 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45
+          version: v1.50
           args: -E gosec,goconst,nestif,bodyclose,rowserrcheck
