@@ -166,7 +166,7 @@ func (c *Config) readConfig() error {
 	}
 
 	if _, err := os.Stat(c.JwtPrivateKey); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("Error when reading from private key file, reason: '%s'", err)
+		return fmt.Errorf("Missing private key file, reason: '%s'", err)
 	}
 
 	return nil
