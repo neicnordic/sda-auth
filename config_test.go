@@ -18,15 +18,16 @@ import (
 
 type ConfigTests struct {
 	suite.Suite
-	TempDir         string
-	ConfigFile      *os.File
-	ElixirConfig    ElixirConfig
-	CegaConfig      CegaConfig
-	ServerConfig    ServerConfig
-	S3Inbox         string
-	JwtIssuer       string
-	JwtPrivateKey   string
-	JwtSignatureAlg string
+	TempDir           string
+	ConfigFile        *os.File
+	ElixirConfig      ElixirConfig
+	CegaConfig        CegaConfig
+	ServerConfig      ServerConfig
+	S3Inbox           string
+	JwtIssuer         string
+	JwtPrivateKey     string
+	JwtPrivateKeyFile *os.File
+	JwtSignatureAlg   string
 }
 
 func TestConfigTestSuite(t *testing.T) {
@@ -36,6 +37,26 @@ func TestConfigTestSuite(t *testing.T) {
 func (suite *ConfigTests) SetupTest() {
 
 	var err error
+
+	// Create a temporary directory for our config file
+	suite.TempDir, err = os.MkdirTemp("", "sda-auth-test-")
+	if err != nil {
+		log.Fatal("Couldn't create temporary test directory", err)
+	}
+	suite.ConfigFile, err = os.Create(filepath.Join(suite.TempDir, "config.yaml"))
+	if err != nil {
+		log.Fatal("Cannot create temporary config file", err)
+	}
+
+	// Create temporary dummy keys
+	suite.JwtPrivateKeyFile, err = os.Create(filepath.Join(suite.TempDir, "jwt-dummy-sec.c4gh"))
+	if err != nil {
+		log.Fatal("Cannot create temporary private key file", err)
+	}
+	_, err = os.Create(filepath.Join(suite.TempDir, "jwt-dummy-sec.c4gh_env"))
+	if err != nil {
+		log.Fatal("Cannot create temporary private key file", err)
+	}
 
 	// config values to write to the config file
 	suite.ElixirConfig = ElixirConfig{
@@ -59,18 +80,8 @@ func (suite *ConfigTests) SetupTest() {
 
 	suite.S3Inbox = "s3://testInbox"
 	suite.JwtIssuer = "JwtIssuer"
-	suite.JwtPrivateKey = "JwtPrivateKey"
+	suite.JwtPrivateKey = suite.JwtPrivateKeyFile.Name()
 	suite.JwtSignatureAlg = "RS256"
-
-	// Create a temporary directory for our config file
-	suite.TempDir, err = os.MkdirTemp("", "sda-auth-test-")
-	if err != nil {
-		log.Fatal("Couldn't create temporary test directory", err)
-	}
-	suite.ConfigFile, err = os.Create(filepath.Join(suite.TempDir, "config.yaml"))
-	if err != nil {
-		log.Fatal("Cannot create temporary public key file", err)
-	}
 
 	// Write config to temp config file
 	configYaml, err := yaml.Marshal(Config{
@@ -127,9 +138,9 @@ func (suite *ConfigTests) TestConfig() {
 	assert.Equal(suite.T(), suite.S3Inbox, config.S3Inbox, "S3Inbox misread from config file")
 
 	// Check JWT values
-	assert.Equal(suite.T(), suite.JwtIssuer, config.JwtIssuer, "CEGA JwtIssuer misread from config file")
-	assert.Equal(suite.T(), suite.JwtPrivateKey, config.JwtPrivateKey, "CEGA JwtPrivateKey misread from config file")
-	assert.Equal(suite.T(), suite.JwtSignatureAlg, config.JwtSignatureAlg, "CEGA JwtSignatureAlg misread from config file")
+	assert.Equal(suite.T(), suite.JwtIssuer, config.JwtIssuer, "JwtIssuer misread from config file")
+	assert.Equal(suite.T(), suite.JwtPrivateKey, config.JwtPrivateKey, "JwtPrivateKey misread from config file")
+	assert.Equal(suite.T(), suite.JwtSignatureAlg, config.JwtSignatureAlg, "JwtSignatureAlg misread from config file")
 
 	// sanitycheck without config file or ENVs
 	// this should fail
@@ -154,7 +165,7 @@ func (suite *ConfigTests) TestConfig() {
 	os.Setenv("S3INBOX", fmt.Sprintf("env_%v", suite.S3Inbox))
 
 	os.Setenv("JWTISSUER", fmt.Sprintf("env_%v", suite.JwtIssuer))
-	os.Setenv("JWTPRIVATEKEY", fmt.Sprintf("env_%v", suite.JwtPrivateKey))
+	os.Setenv("JWTPRIVATEKEY", fmt.Sprintf("%v_env", suite.JwtPrivateKey))
 	os.Setenv("JWTSIGNATUREALG", fmt.Sprintf("env_%v", suite.JwtSignatureAlg))
 
 	// re-read the config
@@ -175,7 +186,14 @@ func (suite *ConfigTests) TestConfig() {
 
 	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.S3Inbox), config.S3Inbox, "S3Inbox misread from environment variable")
 
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtIssuer), config.JwtIssuer, "CEGA JwtIssuer misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtPrivateKey), config.JwtPrivateKey, "CEGA JwtPrivateKey misread from environment variable")
-	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtSignatureAlg), config.JwtSignatureAlg, "CEGA JwtSignatureAlg misread from environment variable")
+	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtIssuer), config.JwtIssuer, "JwtIssuer misread from environment variable")
+	assert.Equal(suite.T(), fmt.Sprintf("%v_env", suite.JwtPrivateKey), config.JwtPrivateKey, "JwtPrivateKey misread from environment variable")
+	assert.Equal(suite.T(), fmt.Sprintf("env_%v", suite.JwtSignatureAlg), config.JwtSignatureAlg, "JwtSignatureAlg misread from environment variable")
+
+	// Check missing private key
+	os.Setenv("JWTPRIVATEKEY", "nonexistent-key-file")
+
+	// re-read the config
+	_, err = NewConfig()
+	assert.ErrorContains(suite.T(), err, "Error when reading from private key file")
 }

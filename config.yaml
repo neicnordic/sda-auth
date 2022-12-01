@@ -4,7 +4,7 @@ log:
   format: "json"
 elixir:
   id: "XC56EL11xx"
-  issuer: "http://oidc:9090"
+  provider: "http://oidc:9090"
   redirectUri: "http://oidc:31111/elixir/login"
   revocationUrl: "http://oidc:9090"
   secret: "wHPVQaYXmdDHg"
