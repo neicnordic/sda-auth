@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/google/uuid v1.3.0
 	github.com/iris-contrib/middleware/cors v0.0.0-20220417122231-60b1fdb1e02b
 	github.com/kataras/iris/v12 v12.2.0-beta6
