@@ -1,6 +1,8 @@
 name: build PR container
+
 on:
   pull_request:
+
 jobs:
   build:
     name: Build PR image
