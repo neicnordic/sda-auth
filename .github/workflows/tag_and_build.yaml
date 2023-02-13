@@ -3,6 +3,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "Dockerfile"
+      - "*.go"
+      - "go.*"
+      - "frontend/**"
+
 jobs:
   tag:
     name: bump tags

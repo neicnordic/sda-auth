@@ -2,6 +2,10 @@ name: build PR container
 
 on:
   pull_request:
+    paths:
+      - "Dockerfile"
+      - "*.go"
+      - "frontend/**"
 
 jobs:
   build:
