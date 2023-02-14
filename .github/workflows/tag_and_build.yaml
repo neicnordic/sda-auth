@@ -2,7 +2,13 @@ name: Bump version
 on:
   push:
     branches:
-    - main
+      - main
+    paths:
+      - "Dockerfile"
+      - "*.go"
+      - "go.*"
+      - "frontend/**"
+
 jobs:
   tag:
     name: bump tags
@@ -12,16 +18,16 @@ jobs:
       new_tag: ${{ steps.bump_tag.outputs.new_tag }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: '1'
-    - name: Bump version and push tag
-      id: bump_tag
-      uses: anothrNick/github-tag-action@1.61.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: true
-        DEFAULT_BUMP: patch
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: "1"
+      - name: Bump version and push tag
+        id: bump_tag
+        uses: anothrNick/github-tag-action@1.61.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
 
   push_to_registry:
     needs: tag
