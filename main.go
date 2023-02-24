@@ -67,6 +67,8 @@ func (auth AuthHandler) getInboxConfig(ctx iris.Context, authType string) {
 
 // getMain returns the index.html page
 func (auth AuthHandler) getMain(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
 	err := ctx.View("index.html")
 	if err != nil {
 		log.Error("Failed to view index page: ", err)
@@ -77,6 +79,8 @@ func (auth AuthHandler) getMain(ctx iris.Context) {
 
 // getLoginOptions returns the available login providers as JSON
 func (auth AuthHandler) getLoginOptions(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
+
 	// Elixir is always available
 	response := []LoginOption{{Name: "Elixir", URL: "/elixir"}}
 	// Only add the CEGA option if it has both id and secret
@@ -175,6 +179,9 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 
 // getEGALogin returns the EGA login form
 func (auth AuthHandler) getEGALogin(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
+
 	s := sessions.Get(ctx)
 	message := s.GetFlashString("message")
 	if message == "" {
@@ -197,6 +204,8 @@ func (auth AuthHandler) getEGALogin(ctx iris.Context) {
 
 // getEGAConf returns an s3config file for an elixir login
 func (auth AuthHandler) getEGAConf(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
+
 	auth.getInboxConfig(ctx, "ega")
 }
 
@@ -271,6 +280,7 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 
 // getElixirLogin renders the `elixir.html` template to the given iris context
 func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
 
 	oidcData := auth.elixirLogin(ctx)
 	if oidcData == nil {
@@ -289,6 +299,7 @@ func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 
 // getElixirCORSLogin returns the oidc data as JSON to the given iris context
 func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
 
 	oidcData := auth.elixirLogin(ctx)
 	if oidcData == nil {
@@ -305,6 +316,8 @@ func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
 
 // getElixirConf returns an s3config file for an elixir login
 func (auth AuthHandler) getElixirConf(ctx iris.Context) {
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
+
 	auth.getInboxConfig(ctx, "elixir")
 }
 
@@ -348,7 +361,12 @@ func main() {
 	app.Use(sess.Handler())
 
 	app.RegisterView(iris.HTML(authHandler.htmlDir, ".html"))
-	app.HandleDir("/public", iris.Dir(authHandler.staticDir))
+	app.HandleDir("/public", iris.Dir(authHandler.staticDir), iris.DirOptions{
+		AssetValidator: func(ctx iris.Context, name string) bool {
+			ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
+			return true
+		},
+	})
 
 	app.Get("/", authHandler.getMain)
 	app.Get("/login-options", authHandler.getLoginOptions)
