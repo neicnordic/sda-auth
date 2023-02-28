@@ -68,7 +68,7 @@ func (auth AuthHandler) getInboxConfig(ctx iris.Context, authType string) {
 // getMain returns the index.html page
 func (auth AuthHandler) getMain(ctx iris.Context) {
 	ctx.ResponseWriter().Header().Set("Content-Security-Policy", "default-src 'self';"+
-		"script-src-elem 'self' 'sha256-/jbtqE43/+Srt0XgGujfzyEondwNbvz3rt+ny8ocPZE=';"+
+		"script-src-elem 'self';"+
 		"img-src 'self' data:;"+
 		"frame-ancestors 'none';"+
 		"form-action 'none'")
