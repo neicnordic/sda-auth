@@ -75,7 +75,7 @@ func (auth AuthHandler) getMain(ctx iris.Context) {
 
 	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
 	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-abcestors in new browsers
+	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-ancestors in new browsers
 
 	err := ctx.View("index.html")
 	if err != nil {
@@ -194,7 +194,7 @@ func (auth AuthHandler) getEGALogin(ctx iris.Context) {
 
 	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
 	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-abcestors in new browsers
+	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-ancestors in new browsers
 
 	s := sessions.Get(ctx)
 	message := s.GetFlashString("message")
