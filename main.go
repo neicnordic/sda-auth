@@ -67,15 +67,6 @@ func (auth AuthHandler) getInboxConfig(ctx iris.Context, authType string) {
 
 // getMain returns the index.html page
 func (auth AuthHandler) getMain(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("Content-Security-Policy", "default-src 'self';"+
-		"script-src-elem 'self';"+
-		"img-src 'self' data:;"+
-		"frame-ancestors 'none';"+
-		"form-action 'none'")
-
-	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-ancestors in new browsers
 
 	err := ctx.View("index.html")
 	if err != nil {
@@ -87,7 +78,6 @@ func (auth AuthHandler) getMain(ctx iris.Context) {
 
 // getLoginOptions returns the available login providers as JSON
 func (auth AuthHandler) getLoginOptions(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
 
 	// Elixir is always available
 	response := []LoginOption{{Name: "Elixir", URL: "/elixir"}}
@@ -187,14 +177,6 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 
 // getEGALogin returns the EGA login form
 func (auth AuthHandler) getEGALogin(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("Content-Security-Policy", "default-src 'self';"+
-		"img-src 'self' data:;"+
-		"frame-ancestors 'none';"+
-		"form-action 'self'")
-
-	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-ancestors in new browsers
 
 	s := sessions.Get(ctx)
 	message := s.GetFlashString("message")
@@ -218,8 +200,6 @@ func (auth AuthHandler) getEGALogin(ctx iris.Context) {
 
 // getEGAConf returns an s3config file for an elixir login
 func (auth AuthHandler) getEGAConf(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-
 	auth.getInboxConfig(ctx, "ega")
 }
 
@@ -294,7 +274,6 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 
 // getElixirLogin renders the `elixir.html` template to the given iris context
 func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
 
 	oidcData := auth.elixirLogin(ctx)
 	if oidcData == nil {
@@ -313,7 +292,6 @@ func (auth AuthHandler) getElixirLogin(ctx iris.Context) {
 
 // getElixirCORSLogin returns the oidc data as JSON to the given iris context
 func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
 
 	oidcData := auth.elixirLogin(ctx)
 	if oidcData == nil {
@@ -330,9 +308,28 @@ func (auth AuthHandler) getElixirCORSLogin(ctx iris.Context) {
 
 // getElixirConf returns an s3config file for an elixir login
 func (auth AuthHandler) getElixirConf(ctx iris.Context) {
-	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-
 	auth.getInboxConfig(ctx, "elixir")
+}
+
+// globalHeaders presets common response headers
+func globalHeaders(ctx iris.Context) {
+
+	ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
+	ctx.Next()
+}
+
+// addCSPheaders implements CSP and recommended complementary policies
+func addCSPheaders(ctx iris.Context) {
+
+	ctx.ResponseWriter().Header().Set("Content-Security-Policy", "default-src 'self';"+
+		"script-src-elem 'self';"+
+		"img-src 'self' data:;"+
+		"frame-ancestors 'none';"+
+		"form-action 'self'")
+
+	ctx.ResponseWriter().Header().Set("Referrer-Policy", "no-referrer")
+	ctx.ResponseWriter().Header().Set("X-Frame-Options", "DENY") // legacy option, obsolete by CSP frame-ancestors in new browsers
+	ctx.Next()
 }
 
 func main() {
@@ -375,26 +372,23 @@ func main() {
 	app.Use(sess.Handler())
 
 	app.RegisterView(iris.HTML(authHandler.htmlDir, ".html"))
-	app.HandleDir("/public", iris.Dir(authHandler.staticDir), iris.DirOptions{
-		AssetValidator: func(ctx iris.Context, name string) bool {
-			ctx.ResponseWriter().Header().Set("X-Content-Type-Options", "nosniff")
-			return true
-		},
-	})
+	app.HandleDir("/public", iris.Dir(authHandler.staticDir))
 
-	app.Get("/", authHandler.getMain)
+	app.Get("/", addCSPheaders, authHandler.getMain)
 	app.Get("/login-options", authHandler.getLoginOptions)
 
 	// EGA endpoints
 	app.Post("/ega", authHandler.postEGA)
 	app.Get("/ega/s3conf", authHandler.getEGAConf)
-	app.Get("/ega/login", authHandler.getEGALogin)
+	app.Get("/ega/login", addCSPheaders, authHandler.getEGALogin)
 
 	// Elixir endpoints
 	app.Get("/elixir", authHandler.getElixir)
 	app.Get("/elixir/s3conf", authHandler.getElixirConf)
 	app.Get("/elixir/login", authHandler.getElixirLogin)
 	app.Get("/elixir/cors_login", authHandler.getElixirCORSLogin)
+
+	app.UseGlobal(globalHeaders)
 
 	if config.Server.Cert != "" && config.Server.Key != "" {
 
