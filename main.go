@@ -127,7 +127,7 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 			return
 		}
 
-		hash := ur.Results.Response[0].PasswordHash
+		hash := ur.PasswordHash
 
 		ok := verifyPassword(password, hash)
 

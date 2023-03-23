@@ -10,7 +10,7 @@ elixir:
   secret: "wHPVQaYXmdDHg"
   jwkPath: "/jwks"
 cega:
-  authUrl: "http://cega:8443/lega/v1/legas/users/"
+  authUrl: "https://nss.test.ega-archive.org/username/"
   id: "dummy"
   secret: "dummy"
 server:
