@@ -45,7 +45,7 @@ func verifyPassword(password, hash string) bool {
 func authenticateWithCEGA(conf CegaConfig, username string) (*http.Response, error) {
 	client := &http.Client{}
 	payload := strings.NewReader("")
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s?idType=username", conf.AuthURL, username), payload)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", strings.TrimSuffix(conf.AuthURL, "/"), username), payload)
 
 	if err != nil {
 		log.Fatal(err)
