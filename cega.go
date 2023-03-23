@@ -15,18 +15,8 @@ type EGALoginError struct {
 	Reason string
 }
 
-// CegaUserResponse captures the response key
+// CegaUserResponse captures the response list
 type CegaUserResponse struct {
-	Results CegaUserResults `json:"response"`
-}
-
-// CegaUserResults captures the result key
-type CegaUserResults struct {
-	Response []CegaUserInfo `json:"result"`
-}
-
-// CegaUserInfo captures the password hash
-type CegaUserInfo struct {
 	PasswordHash string `json:"passwordHash"`
 }
 
