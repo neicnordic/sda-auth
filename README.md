@@ -21,6 +21,7 @@ Parameter | Description | Defined value
 `CORS_CREDENTIALS` | If cookies, authorization headers, and TLS client certificates are allowed over CORS | `false`
 `SERVER_CERT` | Certificate file path | `""`
 `SERVER_KEY` | Private key file path | `""`
+`SERVER_TRUSTEDISS` | Json file with trusted issuer-jku pair(s). If empty, checks of trusted issuers will be skipped. | `""`
 `S3INBOX` | S3 inbox host | `s3.example.com`
 `JWTISSUER` | Issuer of JWT tokens | `http://auth:8080`
 `JWTPRIVATEKEY` | Path to private key for signing the JWT token | `keys/sign-jwt.key`
