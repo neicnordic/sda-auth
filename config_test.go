@@ -195,5 +195,5 @@ func (suite *ConfigTests) TestConfig() {
 
 	// re-read the config
 	_, err = NewConfig()
-	assert.ErrorContains(suite.T(), err, "Error when reading from private key file")
+	assert.ErrorContains(suite.T(), err, "Missing private key file")
 }
