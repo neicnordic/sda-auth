@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -36,11 +37,18 @@ type CORSConfig struct {
 	AllowCredentials bool
 }
 
+// Trusted ISS info
+type TrustedISS struct {
+	ISS string `json:"iss"`
+	JKU string `json:"jku"`
+}
+
 // ServerConfig stores general server information
 type ServerConfig struct {
-	Cert string
-	Key  string
-	CORS CORSConfig
+	Cert        string
+	Key         string
+	CORS        CORSConfig
+	TrustedList []TrustedISS
 }
 
 // Config is a parent object for all the different configuration parts
@@ -137,6 +145,15 @@ func (c *Config) readConfig() error {
 		s.Key = viper.GetString("server.key")
 	}
 
+	s.TrustedList = nil
+	if viper.IsSet("server.trustedIss") {
+		obj, err := readTrustedIssuers(viper.GetString("server.trustedIss"))
+		if err != nil {
+			return fmt.Errorf("Missing trusted issuers file, reason: '%s'", err)
+		}
+		s.TrustedList = obj
+	}
+
 	c.Server = s
 
 	c.S3Inbox = viper.GetString("s3Inbox")
@@ -170,4 +187,25 @@ func (c *Config) readConfig() error {
 	}
 
 	return nil
+}
+
+// readTrustedIssuers reads information about trusted iss: jku keypair
+// the data can be changed in the deployment by configuring SERVER_TRUSTED_ISS env var
+// inspired by sda-download
+func readTrustedIssuers(filePath string) ([]TrustedISS, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+
+		return nil, fmt.Errorf("Error when opening file with issuers, reason: %v", err)
+	}
+
+	// Now let's unmarshall the data into `payload`
+	var payload []TrustedISS
+	err = json.Unmarshal(content, &payload)
+	if err != nil {
+
+		return nil, fmt.Errorf("Error during Unmarshal, reason: %v", err)
+	}
+
+	return payload, nil
 }

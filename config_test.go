@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -28,6 +29,8 @@ type ConfigTests struct {
 	JwtPrivateKey     string
 	JwtPrivateKeyFile *os.File
 	JwtSignatureAlg   string
+	IssFile           *os.File
+	TrustedISS        []TrustedISS
 }
 
 func TestConfigTestSuite(t *testing.T) {
@@ -48,6 +51,12 @@ func (suite *ConfigTests) SetupTest() {
 		log.Fatal("Cannot create temporary config file", err)
 	}
 
+	// Create temporary trusted issuers file
+	suite.IssFile, err = os.Create(filepath.Join(suite.TempDir, "iss.json"))
+	if err != nil {
+		log.Fatal("Cannot create temporary trusted issuers file", err)
+	}
+
 	// Create temporary dummy keys
 	suite.JwtPrivateKeyFile, err = os.Create(filepath.Join(suite.TempDir, "jwt-dummy-sec.c4gh"))
 	if err != nil {
@@ -56,6 +65,28 @@ func (suite *ConfigTests) SetupTest() {
 	_, err = os.Create(filepath.Join(suite.TempDir, "jwt-dummy-sec.c4gh_env"))
 	if err != nil {
 		log.Fatal("Cannot create temporary private key file", err)
+	}
+
+	// contents to write to iss json file
+	suite.TrustedISS = []TrustedISS{
+		{
+			ISS: "http://someplace/we/trust",
+			JKU: "http://someplace/we/trust/jwk",
+		},
+		{
+			ISS: "http://another/place/we/trust",
+			JKU: "http://another/place/we/trust/jwk",
+		},
+	}
+
+	// Write trustedISS to temp iss json file
+	issJson, err := json.Marshal(suite.TrustedISS)
+	if err != nil {
+		log.Errorf("Error marshalling iss json: %v", err)
+	}
+	_, err = suite.IssFile.Write(issJson)
+	if err != nil {
+		log.Errorf("Error writing iss file: %v", err)
 	}
 
 	// config values to write to the config file
@@ -196,4 +227,13 @@ func (suite *ConfigTests) TestConfig() {
 	// re-read the config
 	_, err = NewConfig()
 	assert.ErrorContains(suite.T(), err, "Missing private key file")
+}
+
+func (suite *ConfigTests) TestReadTrustedIssuers() {
+	trustedList, err := readTrustedIssuers(suite.IssFile.Name())
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), suite.TrustedISS, trustedList, "iss json not read properly")
+
+	_, err = readTrustedIssuers("noexistent")
+	assert.Error(suite.T(), err)
 }
