@@ -17,6 +17,7 @@ server:
   # do not use TLS until certs are fixed
   # cert: "keys/cert.pem"
   # key: "keys/key.pem"
+  trustedIss: "iss.json"
 s3Inbox: "s3.example.com"
 jwtIssuer: "http://auth:8080"
 jwtPrivateKey: "keys/sign-jwt.key"
