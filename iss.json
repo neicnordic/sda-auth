@@ -1,0 +1,10 @@
+[
+    {
+        "iss": "http://oidc:9090",
+        "jku": "http://oidc:9090/jwks"
+    },
+    {
+        "iss": "http://auth:8080",
+        "jku": "http://oidc:9090/jwks"
+    }
+]
