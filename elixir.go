@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt/v4"
@@ -62,7 +63,8 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 		return idStruct, err
 	}
 
-	_, err = validateToken(rawIDToken, jwkURL)
+	// Validate raw token signature and get expiration date
+	_, rawExpDate, err := validateToken(rawIDToken, jwkURL)
 	if err != nil {
 		return idStruct, fmt.Errorf("could not validate raw jwt against pub key, reason: %v", err)
 	}
@@ -103,22 +105,23 @@ func authenticateWithOidc(oauth2Config oauth2.Config, provider *oidc.Provider, c
 		Passport: claims.PassportClaim,
 		Profile:  claims.ProfileClaim,
 		Email:    claims.EmailClaim,
+		ExpDate:  rawExpDate,
 	}
 
 	return idStruct, err
 }
 
-// Validate raw (Elixir) jwt against public key from jwk. Return parsed jwt.
-func validateToken(rawJwt, jwksURL string) (*jwt.Token, error) {
+// Validate raw (Elixir) jwt against public key from jwk. Return parsed jwt and its expiration date.
+func validateToken(rawJwt, jwksURL string) (*jwt.Token, string, error) {
 
 	// Fetch public key
 	set, err := jwk.Fetch(jwksURL)
 	if err != nil {
-		return nil, fmt.Errorf(err.Error())
+		return nil, "", fmt.Errorf(err.Error())
 	}
 	pubKey, err := set.Keys[0].Materialize()
 	if err != nil {
-		return nil, fmt.Errorf("failed to materialize public key %s", err.Error())
+		return nil, "", fmt.Errorf("failed to materialize public key %s", err.Error())
 	}
 
 	token, err := jwt.Parse(rawJwt, func(token *jwt.Token) (interface{}, error) {
@@ -138,8 +141,14 @@ func validateToken(rawJwt, jwksURL string) (*jwt.Token, error) {
 
 	// If error is for signature validation
 	if err != nil && v.Errors == jwt.ValidationErrorSignatureInvalid {
-		return nil, fmt.Errorf("signature not valid: %s", err.Error())
+		return nil, "", fmt.Errorf("signature not valid: %s", err.Error())
 	}
 
-	return token, err
+	d, ok := token.Claims.(jwt.MapClaims)["exp"].(float64)
+	if !ok {
+		log.Error("failed to read expiration date from token")
+	}
+	expireDate := time.Unix(int64(d), 0)
+
+	return token, expireDate.Format("2006-01-02 15:04:05"), err
 }

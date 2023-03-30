@@ -188,29 +188,30 @@ func (suite *ElixirTests) TestValidateJwt() {
 	}
 
 	// sanity check
-	token, err := validateToken(elixirJWT, suite.mockServer.JWKSEndpoint())
+	token, expDate, err := validateToken(elixirJWT, suite.mockServer.JWKSEndpoint())
 	if assert.Nil(suite.T(), err) {
 		assert.True(suite.T(), token.Valid, "Validation failed but without returning errors")
+		assert.NotEmpty(suite.T(), expDate, "Validation failed but without returning errors")
 	}
 
 	// wrong jwk url
-	_, err = validateToken(elixirJWT, "http://some/jwk/endpoint")
+	_, _, err = validateToken(elixirJWT, "http://some/jwk/endpoint")
 	assert.ErrorContains(suite.T(), err, "failed to fetch remote JWK")
 
 	// wrong signing method
-	_, err = validateToken(testTokenHS256, suite.mockServer.JWKSEndpoint())
+	_, _, err = validateToken(testTokenHS256, suite.mockServer.JWKSEndpoint())
 	if assert.Error(suite.T(), err) {
 		assert.Equal(suite.T(), "unexpected signing method", err.Error())
 	}
 
 	// wrong private key, RSA
-	_, err = validateToken(testTokenRSA, suite.mockServer.JWKSEndpoint())
+	_, _, err = validateToken(testTokenRSA, suite.mockServer.JWKSEndpoint())
 	if assert.Error(suite.T(), err) {
 		assert.Equal(suite.T(), "signature not valid: crypto/rsa: verification error", err.Error())
 	}
 
 	// wrong private key, ECDSA
-	_, err = validateToken(testTokenEC, suite.mockServer.JWKSEndpoint())
+	_, _, err = validateToken(testTokenEC, suite.mockServer.JWKSEndpoint())
 	if assert.Error(suite.T(), err) {
 		assert.Equal(suite.T(), "signature not valid: key is of invalid type", err.Error())
 	}
