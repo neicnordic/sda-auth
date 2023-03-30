@@ -25,6 +25,7 @@ type JWTTests struct {
 	ECPubFile  *os.File
 	RSAKeyFile *os.File
 	RSAPubFile *os.File
+	TrustedISS []TrustedISS
 }
 
 func TestJWTTestSuite(t *testing.T) {
@@ -125,6 +126,18 @@ func (suite *JWTTests) SetupTest() {
 	if err != nil {
 		log.Error("Error writing EC public key")
 	}
+
+	// populate trusted iss list
+	suite.TrustedISS = []TrustedISS{
+		{
+			ISS: "http://someplace/we/trust",
+			JKU: "http://someplace/we/trust/jwk",
+		},
+		{
+			ISS: "http://another/place/we/trust",
+			JKU: "http://another/place/we/trust/jwk",
+		},
+	}
 }
 
 func (suite *JWTTests) TearDownTest() {
@@ -193,4 +206,85 @@ func (suite *JWTTests) TestGenerateJwtToken() {
 		assert.Nil(suite.T(), err, "Couldn't parse expiration date for jwt")
 
 	}
+}
+
+func (suite *JWTTests) TestValidateTrustedIss() {
+	ok, jku := validateTrustedIss(suite.TrustedISS, "http://another/place/we/trust")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), suite.TrustedISS[1].JKU, jku)
+
+	ok, jku = validateTrustedIss(suite.TrustedISS, "http://some/place/not/in/list")
+	assert.False(suite.T(), ok)
+	assert.Equal(suite.T(), "", jku)
+
+	var emptyList []TrustedISS
+	ok, jku = validateTrustedIss(emptyList, "http://some/place/not/in/list")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), "", jku)
+}
+
+func (suite *JWTTests) TestReadFromJWTpayload() {
+
+	claims := &Claims{
+		"test@foo.bar",
+		"",
+		jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+			Issuer:   "http://local.issuer",
+			Subject:  "test@foo.bar",
+		},
+	}
+
+	ts, _, err := generateJwtToken(claims, suite.RSAKeyFile.Name(), "RS256")
+	if err == nil {
+		log.Error(err)
+	}
+	issuer, err := readFromJWTpayload(ts, "iss")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "http://local.issuer", issuer.(string))
+}
+
+func (suite *JWTTests) TestCheckTrustedIss() {
+
+	claims := &Claims{
+		"test@foo.bar",
+		"",
+		jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+			Issuer:   "http://local.issuer",
+			Subject:  "test@foo.bar",
+		},
+	}
+
+	ts, _, err := generateJwtToken(claims, suite.RSAKeyFile.Name(), "RS256")
+	if err == nil {
+		log.Error(err)
+	}
+
+	// unknown issuer
+	err = checkTrustedIss(ts, suite.TrustedISS)
+	assert.EqualError(suite.T(), err, "token issuer: 'http://local.issuer' is not in trusted list")
+
+	claims = &Claims{
+		"test@foo.bar",
+		"",
+		jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+			Issuer:   "http://someplace/we/trust",
+			Subject:  "test@foo.bar",
+		},
+	}
+
+	ts, _, err = generateJwtToken(claims, suite.RSAKeyFile.Name(), "RS256")
+	if err == nil {
+		log.Error(err)
+	}
+
+	// trusted issuer but jku retrieved from trusted list wrong
+	err = checkTrustedIss(ts, suite.TrustedISS)
+	assert.ErrorContains(suite.T(), err, "failed to fetch remote JWK")
+
+	// trusted list is empty (function skips all checks)
+	err = checkTrustedIss("sometoken", nil)
+	assert.NoError(suite.T(), err)
 }
