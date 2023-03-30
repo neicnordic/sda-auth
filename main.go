@@ -147,6 +147,14 @@ func (auth AuthHandler) postEGA(ctx iris.Context) {
 				log.Errorf("error when generating token: %v", err)
 			}
 
+			// Perform issuer and corresponding signature validation checks.
+			// checkTrustedIss skips all checks and returns true if trustedIss is nil.
+			if err = checkTrustedIss(token, auth.Config.Server.TrustedList); err != nil {
+				log.Error("Failed to validate token: ", err)
+
+				return
+			}
+
 			s3conf := getS3ConfigMap(token, auth.Config.S3Inbox, username)
 			idStruct := EGAIdentity{User: username, Token: token, ExpDate: expDate}
 			s.SetFlash("ega", s3conf)
@@ -265,6 +273,14 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 	}
 	idStruct.Token = token
 	idStruct.ExpDate = expDate
+
+	// Perform issuer and corresponding signature validation checks.
+	// checkTrustedIss skips all checks and returns true if trustedIss is nil.
+	if err = checkTrustedIss(idStruct.Token, auth.Config.Server.TrustedList); err != nil {
+		log.Error("Failed to validate token: ", err)
+
+		return nil
+	}
 
 	log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 	s3conf := getS3ConfigMap(idStruct.Token, auth.Config.S3Inbox, idStruct.User)
