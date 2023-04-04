@@ -229,4 +229,14 @@ func (suite *ElixirTests) TestValidateJwt() {
 	// expired token
 	_, _, err = validateToken(testExpiredTokenRSA, suite.mockServer.JWKSEndpoint())
 	assert.Equal(suite.T(), "Token is expired", err.Error())
+
+	// check that we handle the case where token has no expiration date
+	claims.ExpiresAt = nil
+	expiredTokenRSA = jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	testExpiredTokenRSA, err = expiredTokenRSA.SignedString(rsaKey)
+	if err != nil {
+		log.Error(err)
+	}
+	_, _, err = validateToken(testExpiredTokenRSA, suite.mockServer.JWKSEndpoint())
+	assert.ErrorContains(suite.T(), err, "signature not valid")
 }
