@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/oauth2-proxy/mockoidc"
@@ -157,7 +158,8 @@ func (suite *ElixirTests) TestValidateJwt() {
 	// Create HS256 test token
 	mySigningKey := []byte("AllYourBase")
 	claims := &jwt.RegisteredClaims{
-		Issuer: "test",
+		Issuer:    "test",
+		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Hour)),
 	}
 	tokenHS256 := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	testTokenHS256, err := tokenHS256.SignedString(mySigningKey)
@@ -191,7 +193,7 @@ func (suite *ElixirTests) TestValidateJwt() {
 	token, expDate, err := validateToken(elixirJWT, suite.mockServer.JWKSEndpoint())
 	if assert.Nil(suite.T(), err) {
 		assert.True(suite.T(), token.Valid, "Validation failed but without returning errors")
-		assert.NotEmpty(suite.T(), expDate, "Validation failed but without returning errors")
+		assert.Equal(suite.T(), expDate, elixirIdentity.ExpDate, "Returned wrong exp date but without returning errors")
 	}
 
 	// wrong jwk url
