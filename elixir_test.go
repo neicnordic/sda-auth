@@ -178,13 +178,21 @@ func (suite *ElixirTests) TestValidateJwt() {
 		log.Error(err)
 	}
 
-	// Create RSA test token
+	// Create ECDSA test token
 	ecKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		log.Error(err)
 	}
 	tokenEC := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 	testTokenEC, err := tokenEC.SignedString(ecKey)
+	if err != nil {
+		log.Error(err)
+	}
+
+	// Create expired RSA test token
+	claims.ExpiresAt = jwt.NewNumericDate(time.Now().UTC().Add(-time.Hour))
+	expiredTokenRSA := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	testExpiredTokenRSA, err := expiredTokenRSA.SignedString(rsaKey)
 	if err != nil {
 		log.Error(err)
 	}
@@ -217,4 +225,8 @@ func (suite *ElixirTests) TestValidateJwt() {
 	if assert.Error(suite.T(), err) {
 		assert.Equal(suite.T(), "signature not valid: key is of invalid type", err.Error())
 	}
+
+	// expired token
+	_, _, err = validateToken(testExpiredTokenRSA, suite.mockServer.JWKSEndpoint())
+	assert.Equal(suite.T(), "Token is expired", err.Error())
 }

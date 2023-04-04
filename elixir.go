@@ -144,6 +144,12 @@ func validateToken(rawJwt, jwksURL string) (*jwt.Token, string, error) {
 		return nil, "", fmt.Errorf("signature not valid: %s", err.Error())
 	}
 
+	// Verify token dates. Ignores clock skew, but that should be
+	// irrelevant here since tokens are relatively long-lived
+	if err := token.Claims.(jwt.MapClaims).Valid(); err != nil {
+		return nil, "", fmt.Errorf(err.Error())
+	}
+
 	d, ok := token.Claims.(jwt.MapClaims)["exp"].(float64)
 	if !ok {
 		log.Error("failed to read expiration date from token")
