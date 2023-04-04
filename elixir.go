@@ -150,11 +150,15 @@ func validateToken(rawJwt, jwksURL string) (*jwt.Token, string, error) {
 		return nil, "", fmt.Errorf(err.Error())
 	}
 
-	d, ok := token.Claims.(jwt.MapClaims)["exp"].(float64)
-	if !ok {
-		log.Error("failed to read expiration date from token")
+	var expireDate time.Time
+	switch d := token.Claims.(jwt.MapClaims)["exp"].(type) {
+	case float64:
+		expireDate = time.Unix(int64(d), 0)
+	case int64:
+		expireDate = time.Unix(d, 0)
+	default:
+		return nil, "", fmt.Errorf("failed to read expiration date from token")
 	}
-	expireDate := time.Unix(int64(d), 0)
 
 	return token, expireDate.Format("2006-01-02 15:04:05"), err
 }
