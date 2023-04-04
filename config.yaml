@@ -21,3 +21,4 @@ s3Inbox: "s3.example.com"
 jwtIssuer: "http://auth:8080"
 jwtPrivateKey: "keys/sign-jwt.key"
 jwtSignatureAlg: "ES256"
+resignJwt: true

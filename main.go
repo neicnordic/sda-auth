@@ -250,21 +250,23 @@ func (auth AuthHandler) elixirLogin(ctx iris.Context) *OIDCData {
 		return nil
 	}
 
-	claims := &Claims{
-		idStruct.Email,
-		"",
-		jwt.RegisteredClaims{
-			IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
-			Issuer:   auth.Config.JwtIssuer,
-			Subject:  idStruct.User,
-		},
+	if auth.Config.ResignJwt {
+		claims := &Claims{
+			idStruct.Email,
+			"",
+			jwt.RegisteredClaims{
+				IssuedAt: jwt.NewNumericDate(time.Now().UTC()),
+				Issuer:   auth.Config.JwtIssuer,
+				Subject:  idStruct.User,
+			},
+		}
+		token, expDate, err := generateJwtToken(claims, auth.Config.JwtPrivateKey, auth.Config.JwtSignatureAlg)
+		if err != nil {
+			log.Errorf("error when generating token: %v", err)
+		}
+		idStruct.Token = token
+		idStruct.ExpDate = expDate
 	}
-	token, expDate, err := generateJwtToken(claims, auth.Config.JwtPrivateKey, auth.Config.JwtSignatureAlg)
-	if err != nil {
-		log.Errorf("error when generating token: %v", err)
-	}
-	idStruct.Token = token
-	idStruct.ExpDate = expDate
 
 	log.WithFields(log.Fields{"authType": "elixir", "user": idStruct.User}).Infof("User was authenticated")
 	s3conf := getS3ConfigMap(idStruct.Token, auth.Config.S3Inbox, idStruct.User)
