@@ -10,7 +10,7 @@ require (
 	github.com/kataras/iris/v12 v12.2.0
 	github.com/lestrrat/go-jwx v0.9.1
 	github.com/oauth2-proxy/mockoidc v0.0.0-20220308204021-b9169deeb282
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.3
 	golang.org/x/crypto v0.9.0
