@@ -1,3 +1,6 @@
+> ### Archival notice
+> :warning: **This repository is no longer maintained. The code has been integrated and it is further developed at: https://github.com/neicnordic/sensitive-data-archive**
+
 # SDA authentication service
 
 This service allows users to log in both via Elixir AAI or EGA.
